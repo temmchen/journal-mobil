@@ -4,9 +4,9 @@
    Cache; entschlüsselt wird nur im Seitenkontext.
 
    Strategien
-   - Hülle, Index und Manifeste (index.html, lib/*, manifest.webmanifest,
-     vaults/index.json, */m.enc): network-first, Cache als Rückfall.
-   - Tresordateien vaults/*/f/*.enc: cache-first – die Kennung (fid) ändert sich,
+   - Hülle, Index und Manifeste (index.html, lib, manifest.webmanifest,
+     vaults/index.json, m.enc der Tresore): network-first, Cache als Rückfall.
+   - Tresordateien (vaults/…/f/….enc): cache-first – die Kennung (fid) ändert sich,
      sobald der Inhalt sich ändert, der Cache kann also nie veralten.
    - Fremde Origins werden nicht angefasst. */
 
