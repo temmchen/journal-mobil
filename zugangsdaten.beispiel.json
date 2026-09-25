@@ -1,0 +1,17 @@
+{
+  "portal": "Journal Mobil",
+  "url": "https://temmchen.github.io/journal-mobil/",
+  "repo": "https://github.com/temmchen/journal-mobil.git",
+  "schuljahr": "2026 – 2027",
+  "inhalt": "/Users/tbr/Library/CloudStorage/OneDrive-365education/KI/Journal de Classe",
+  "werkzeuge": "/Users/tbr/Library/CloudStorage/OneDrive-365education/KI/Journal Mobil",
+  "optionen": {
+    "nur_lehrer_einschliessen": true,
+    "eintrags_dateien_einschliessen": true,
+    "max_mb_je_datei": 40,
+    "wochen_rueckblick": 0
+  },
+  "zugaenge": [
+    { "name": "Tom (iPhone)", "passwort": "HIER-PASSWORT-4-GRUPPEN" }
+  ]
+}
