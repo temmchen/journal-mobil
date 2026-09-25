@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#1F3B54">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0F1620">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Journal Mobil">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<title>Journal Mobil</title>
+<script>
+/* Farbschema sofort setzen (verhindert Aufblitzen beim Laden). Wahl liegt in localStorage. */
+(function(){try{var v=localStorage.getItem("jm_theme");
+  if(v!=="light"&&v!=="dark") v="";
+  if(v) document.documentElement.setAttribute("data-theme",v);}catch(e){}})();
+</script>
+<style>
+/* ═══════════════════════════ Farben & Grundlagen ═══════════════════════════
+   Stil wie das Journal de Classe: primär #1F3B54, Akzent #2E7DA1, Ampelfarben,
+   CdM violett. Hell ist die Vorgabe, dunkel per System oder Umschalter. */
+:root{
+  --bg:#F4F6FA; --bg2:#EBEFF5; --card:#FFFFFF; --card2:#F6F8FB;
+  --line:#E1E6EE; --line2:#CBD3DF;
+  --tx:#16202B; --tx2:#5B6B7C; --tx3:#8D9AAB;
+  --primary:#1F3B54; --primary-tx:#FFFFFF; --accent:#2E7DA1;
+  --rot:#C0392B; --gelb:#B9770E; --gruen:#2E7D32; --cdm:#7B3FA0;
+  --frei:#EEF1F6; --schraffur:rgba(31,59,84,.06);
+  --radius:16px; --radius-s:11px;
+  --shadow:0 6px 22px rgba(20,35,60,.09);
+  --kf-mix:#000; /* Beimischung für lesbare Klassenfarben (hell: dunkler) */
+  --kf-anteil:88%;
+  --tab-h:58px;
+  color-scheme:light;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1620; --bg2:#141D29; --card:#18222E; --card2:#1F2B3A;
+    --line:#2A3746; --line2:#3A4A5C;
+    --tx:#ECF1F7; --tx2:#A5B3C3; --tx3:#7C8A9B;
+    --primary:#22415C; --accent:#6FB3D6;
+    --rot:#E4796B; --gelb:#E0A93E; --gruen:#5FBF6A; --cdm:#C99BE8;
+    --frei:#141C26; --schraffur:rgba(255,255,255,.05);
+    --shadow:0 8px 26px rgba(0,0,0,.35);
+    --kf-mix:#fff; --kf-anteil:62%;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1620; --bg2:#141D29; --card:#18222E; --card2:#1F2B3A;
+  --line:#2A3746; --line2:#3A4A5C;
+  --tx:#ECF1F7; --tx2:#A5B3C3; --tx3:#7C8A9B;
+  --primary:#22415C; --accent:#6FB3D6;
+  --rot:#E4796B; --gelb:#E0A93E; --gruen:#5FBF6A; --cdm:#C99BE8;
+  --frei:#141C26; --schraffur:rgba(255,255,255,.05);
+  --shadow:0 8px 26px rgba(0,0,0,.35);
+  --kf-mix:#fff; --kf-anteil:62%;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font-size:16px;line-height:1.4;
+  overflow-x:hidden;overscroll-behavior-y:none}
+body.gesperrt{overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation}
+h1,h2,h3,h4{margin:0;font-weight:700}
+.versteckt{display:none !important}
+.leer{color:var(--tx3);font-size:15px;padding:10px 2px}
+
+/* ═══════════════════════════ Anmeldung ═══════════════════════════ */
+#anmeldung{min-height:100dvh;display:grid;place-items:center;padding:calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+.karte-login{width:100%;max-width:400px;background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:26px 22px}
+.karte-login .logo{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.karte-login .logo img{width:56px;height:56px;border-radius:14px}
+.karte-login h1{font-size:23px;color:var(--primary)}
+:root[data-theme="dark"] .karte-login h1{color:var(--tx)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .karte-login h1{color:var(--tx)} }
+.karte-login .unter{color:var(--tx2);font-size:15px;margin-top:2px}
+.feld{display:block;margin-top:14px}
+.feld span{display:block;font-size:14px;color:var(--tx2);margin-bottom:6px}
+.feld input{width:100%;font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);
+  background:var(--card2);outline:none;min-height:48px}
+.feld input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.haken{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px;min-height:44px}
+.haken input{width:22px;height:22px;accent-color:var(--accent)}
+.knopf{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;
+  border-radius:13px;background:var(--accent);color:#fff;font-weight:600;font-size:17px;width:100%;margin-top:10px}
+.knopf:disabled{opacity:.55}
+.knopf.leise{background:var(--card2);color:var(--tx);border:1px solid var(--line)}
+.knopf.warn{background:color-mix(in srgb,var(--rot) 14%,var(--card));color:var(--rot);border:1px solid color-mix(in srgb,var(--rot) 35%,transparent)}
+.status{margin-top:12px;font-size:14px;color:var(--tx2);min-height:20px}
+.status.fehler{color:var(--rot)}
+
+/* ═══════════════════════════ Kopf ═══════════════════════════ */
+#kopf{position:sticky;top:0;z-index:20;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(160%) blur(14px);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line)}
+.kopf-zeile{display:flex;align-items:center;gap:12px}
+.kopf-zeile h1{font-size:21px;letter-spacing:.2px;flex:1;min-width:0}
+.kopf-zeile .sub{font-size:13.5px;color:var(--tx2);display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:1px}
+.marke-offline{font-size:12px;font-weight:600;color:var(--gelb);border:1px solid color-mix(in srgb,var(--gelb) 45%,transparent);
+  border-radius:8px;padding:1px 7px;background:color-mix(in srgb,var(--gelb) 12%,transparent)}
+.rund{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);
+  color:var(--tx);font-size:20px;flex:none}
+.rund:active{background:var(--bg2)}
+
+/* ═══════════════════════════ Hauptbereich & Tabs ═══════════════════════════ */
+main{padding:12px 16px calc(var(--tab-h) + env(safe-area-inset-bottom) + 20px)}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;height:calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);background:color-mix(in srgb,var(--card) 88%,transparent);
+  backdrop-filter:saturate(160%) blur(16px);-webkit-backdrop-filter:saturate(160%) blur(16px);border-top:1px solid var(--line)}
+#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:12px;font-weight:600}
+#tabbar button svg{width:26px;height:26px}
+#tabbar button.aktiv{color:var(--accent)}
+
+/* ═══════════════════════════ Agenda ═══════════════════════════ */
+.wochenleiste{display:flex;align-items:center;gap:6px;margin:4px 0 12px}
+.wochenleiste .titel{flex:1;text-align:center;font-weight:700;font-size:16px;line-height:1.2}
+.wochenleiste .titel small{display:block;font-weight:500;color:var(--tx2);font-size:13px}
+.pfeil{width:44px;height:44px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:18px;display:grid;place-items:center;flex:none}
+.pfeil:active{background:var(--bg2)}
+.heute-knopf{height:44px;padding:0 13px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:600;font-size:15px;flex:none}
+
+.demnaechst{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.demnaechst > button.kopf{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;min-height:48px;font-weight:700;font-size:16px;text-align:left}
+.demnaechst .pfeilchen{transition:transform .2s;color:var(--tx3)}
+.demnaechst.zu .pfeilchen{transform:rotate(-90deg)}
+.demnaechst.zu .inhalt{display:none}
+.demnaechst .inhalt{padding:0 16px 8px}
+.demnaechst h4{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin:6px 0 4px}
+.demnaechst .zeile{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 0;border-top:1px solid var(--line);min-height:44px}
+.demnaechst .zeile:first-of-type{border-top:0}
+.demnaechst .datum{font-variant-numeric:tabular-nums;color:var(--tx2);font-size:14px;flex:none;width:68px;white-space:nowrap}
+.demnaechst .was{flex:1;min-width:0;font-size:15px}
+.demnaechst .was b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.demnaechst .was span{color:var(--tx2);font-size:13.5px}
+
+.tag{margin-bottom:18px}
+.tag-kopf{display:flex;align-items:baseline;gap:8px;padding:4px 2px 8px;font-size:17px}
+.tag-kopf .wt{color:var(--tx)}
+.tag-kopf .dt{color:var(--tx2);font-weight:500}
+.tag.heute .tag-kopf .wt{color:var(--accent)}
+.tag.heute .tag-kopf .wt::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:2px}
+.tag.ausserhalb .tag-kopf,.tag.frei .tag-kopf{color:var(--tx3)}
+.tag.ausserhalb .tag-kopf .wt,.tag.frei .tag-kopf .wt{color:var(--tx3)}
+.banner{border-radius:var(--radius-s);padding:10px 14px;font-size:15px;font-weight:600;color:var(--tx2);
+  background:repeating-linear-gradient(135deg,var(--frei) 0 10px,var(--schraffur) 10px 20px);border:1px solid var(--line);margin-bottom:8px}
+.banner.info{background:color-mix(in srgb,var(--accent) 10%,var(--card));color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+
+.stunde{position:relative;display:block;width:100%;text-align:left;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:12px 14px 12px 20px;margin-bottom:10px;overflow:hidden}
+.stunde::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--kf)}
+.stunde:active{background:var(--card2)}
+.stunde .zeit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--tx2);font-variant-numeric:tabular-nums}
+.stunde .haupt{font-size:17px;font-weight:700;margin-top:2px;color:color-mix(in srgb,var(--kf) var(--kf-anteil),var(--kf-mix))}
+.stunde .raum{font-size:14.5px;color:var(--tx2);margin-top:1px}
+.stunde.entfaellt .haupt,.stunde.entfaellt .zeit{text-decoration:line-through;opacity:.6}
+.stunde .notiz{font-size:14.5px;color:var(--tx);margin-top:6px;white-space:pre-wrap}
+.marke{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px;line-height:1.35;
+  background:var(--bg2);color:var(--tx2);border:1px solid var(--line);vertical-align:middle}
+.marke.rot{background:color-mix(in srgb,var(--rot) 14%,transparent);color:var(--rot);border-color:color-mix(in srgb,var(--rot) 35%,transparent)}
+.marke.gelb{background:color-mix(in srgb,var(--gelb) 16%,transparent);color:var(--gelb);border-color:color-mix(in srgb,var(--gelb) 40%,transparent)}
+.marke.gruen{background:color-mix(in srgb,var(--gruen) 14%,transparent);color:var(--gruen);border-color:color-mix(in srgb,var(--gruen) 35%,transparent)}
+.marke.blau{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+.marke.cdm{background:color-mix(in srgb,var(--cdm) 14%,transparent);color:var(--cdm);border-color:color-mix(in srgb,var(--cdm) 35%,transparent)}
+.eintraege{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--line)}
+.eintrag{display:flex;align-items:flex-start;gap:9px;padding:9px 0 8px;border-bottom:1px solid var(--line);width:100%;text-align:left;min-height:44px}
+.eintrag:last-child{border-bottom:0;padding-bottom:2px}
+.ampel{width:11px;height:11px;border-radius:50%;flex:none;margin-top:6px;background:var(--tx3)}
+.ampel.rot{background:var(--rot)} .ampel.gelb{background:var(--gelb)} .ampel.gruen{background:var(--gruen)}
+.eintrag .inhalt{flex:1;min-width:0}
+.eintrag .typ{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3)}
+.eintrag .typ .kl{color:var(--cdm);text-transform:none;letter-spacing:0}
+.eintrag b{display:block;font-size:15.5px;overflow-wrap:anywhere}
+.eintrag .text{font-size:14px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eintrag .anh{font-size:13px;color:var(--tx2);margin-top:2px}
+.weitere{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px 14px 6px;margin-bottom:10px}
+.weitere h4{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin-bottom:2px}
+.weitere .eintraege{border-top:0;margin-top:0}
+.eintrag.cdm .ampel{outline:2px solid color-mix(in srgb,var(--cdm) 50%,transparent);outline-offset:1px}
+
+/* ═══════════════════════════ Skripte ═══════════════════════════ */
+.filter{position:sticky;top:calc(env(safe-area-inset-top) + 70px);z-index:5;margin:-12px -16px 12px;padding:10px 16px 8px;
+  background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:38px;padding:0 14px;border-radius:19px;background:var(--card);border:1px solid var(--line);font-weight:600;font-size:15px;
+  color:color-mix(in srgb,var(--kf,var(--tx)) var(--kf-anteil),var(--kf-mix))}
+.chip.aktiv{background:var(--kf,var(--primary));color:#fff;border-color:transparent}
+.suchzeile{display:flex;gap:8px;align-items:center}
+.suchzeile input{flex:1;font-size:16px;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);outline:none}
+.suchzeile input:focus{border-color:var(--accent)}
+.schalter{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tx2);white-space:nowrap;min-height:44px}
+.schalter input{appearance:none;width:44px;height:26px;border-radius:13px;background:var(--line2);position:relative;transition:background .2s;flex:none}
+.schalter input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.schalter input:checked{background:var(--accent)} .schalter input:checked::after{left:21px}
+.klasse{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.klasse .kopf{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  background:color-mix(in srgb,var(--kf) 13%,var(--card));color:color-mix(in srgb,var(--kf) var(--kf-anteil),var(--kf-mix));font-weight:800;font-size:18px;border-left:7px solid var(--kf)}
+.klasse .kopf small{font-weight:600;font-size:14px;opacity:.85}
+.gruppe{padding:8px 14px 6px}
+.gruppe + .gruppe{border-top:1px solid var(--line)}
+.gruppe h4{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin:4px 0 4px}
+.modul{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:14px;color:var(--tx2)}
+.modul .badge{font-size:12.5px;font-weight:800;padding:2px 8px;border-radius:7px;background:color-mix(in srgb,var(--kf) 16%,transparent);
+  color:color-mix(in srgb,var(--kf) var(--kf-anteil),var(--kf-mix))}
+.skript{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:9px 2px;min-height:48px;border-top:1px solid var(--line)}
+.skript .ikon{font-size:20px;flex:none;line-height:1.3}
+.skript .inhalt{flex:1;min-width:0}
+.skript .st{font-size:15.5px;font-weight:600;overflow-wrap:anywhere}
+.skript .marken{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.skript .meta{font-size:13px;color:var(--tx2);margin-top:3px;font-variant-numeric:tabular-nums}
+.skript.gesperrt{opacity:.5}
+.skript:active{background:var(--card2)}
+
+/* ═══════════════════════════ Blatt (bottom sheet) ═══════════════════════════ */
+#blatt-hintergrund{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;opacity:0;transition:opacity .2s}
+#blatt{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--card);border-radius:22px 22px 0 0;
+  max-height:calc(100dvh - env(safe-area-inset-top) - 40px);display:flex;flex-direction:column;box-shadow:0 -6px 30px rgba(0,0,0,.25);
+  transform:translateY(100%);transition:transform .25s ease-out}
+#blatt.offen{transform:translateY(0)} #blatt-hintergrund.offen{opacity:1}
+.blatt-griff{width:40px;height:5px;border-radius:3px;background:var(--line2);margin:8px auto 2px;flex:none}
+.blatt-kopf{display:flex;align-items:center;gap:10px;padding:6px 16px 8px;flex:none}
+.blatt-kopf h2{flex:1;font-size:19px;min-width:0;overflow-wrap:anywhere}
+.blatt-inhalt{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(env(safe-area-inset-bottom) + 20px);overscroll-behavior:contain}
+.detail-kopf{border-left:7px solid var(--kf,var(--accent));padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--kf,var(--accent)) 10%,var(--card));margin-bottom:12px}
+.detail-kopf .zeit{font-size:14px;color:var(--tx2);font-variant-numeric:tabular-nums;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.detail-kopf .haupt{font-size:19px;font-weight:800;color:color-mix(in srgb,var(--kf,var(--accent)) var(--kf-anteil),var(--kf-mix))}
+.detail-kopf .raum{font-size:14.5px;color:var(--tx2)}
+.detail-kopf .notiz{margin-top:6px;white-space:pre-wrap;font-size:15px}
+.abschnitt{margin-top:14px}
+.abschnitt h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);margin-bottom:6px}
+.detail-eintrag{background:var(--card2);border-radius:var(--radius-s);padding:10px 12px;margin-bottom:8px;width:100%;text-align:left}
+.detail-eintrag .zeile1{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3)}
+.detail-eintrag b{display:block;font-size:16px;margin-top:2px;overflow-wrap:anywhere}
+.detail-eintrag .volltext{white-space:pre-wrap;font-size:15px;margin-top:6px;overflow-wrap:anywhere}
+.dateien{list-style:none;margin:8px 0 0;padding:0}
+.dateien li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+.dateien .name{flex:1;min-width:0;font-size:14.5px;overflow-wrap:anywhere}
+.dateien .name small{display:block;color:var(--tx3);font-size:12.5px}
+.mini{min-height:40px;padding:0 13px;border-radius:10px;background:var(--card);border:1px solid var(--line2);font-weight:600;font-size:14.5px;flex:none;color:var(--accent)}
+.mini:disabled{opacity:.45}
+.mini:active{background:var(--bg2)}
+.skript-knopf{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:var(--radius-s);background:var(--card2);margin-bottom:8px;min-height:48px}
+.skript-knopf .st{flex:1;font-size:15.5px;font-weight:600;overflow-wrap:anywhere}
+.skript-knopf .meta{font-size:13px;color:var(--tx2);flex:none}
+.mehr-zeile{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.mehr-zeile span:last-child{color:var(--tx2);text-align:right}
+.mehr-knopf{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:12px 14px;min-height:50px;border-radius:var(--radius-s);
+  background:var(--card2);margin-top:8px;font-size:16px;font-weight:600}
+.mehr-knopf small{font-weight:500;color:var(--tx2)}
+.mehr-knopf.warn{color:var(--rot)}
+.segment{display:flex;background:var(--card2);border-radius:12px;padding:3px;margin-top:8px}
+.segment button{flex:1;min-height:40px;border-radius:10px;font-weight:600;font-size:15px;color:var(--tx2)}
+.segment button.aktiv{background:var(--card);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.balken{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.balken div{height:100%;background:var(--accent);width:0;transition:width .2s}
+
+/* ═══════════════════════════ PDF-Viewer (Vollbild) ═══════════════════════════ */
+#viewer{position:fixed;inset:0;z-index:60;background:#3a3f47;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s ease-out}
+#viewer.offen{transform:translateY(0)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #viewer{background:#0b0f15} }
+:root[data-theme="dark"] #viewer{background:#0b0f15}
+.viewer-kopf{flex:none;display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+.viewer-kopf .titel{flex:1;min-width:0;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.viewer-kopf .seiten{font-variant-numeric:tabular-nums;font-size:14px;color:var(--tx2);min-height:44px;padding:0 8px;border-radius:10px;white-space:nowrap}
+.viewer-kopf .rund{width:40px;height:40px;font-size:18px}
+.viewer-leiste{flex:none;display:flex;justify-content:center;gap:10px;padding:6px 10px calc(env(safe-area-inset-bottom) + 6px);background:var(--card);border-top:1px solid var(--line)}
+.viewer-leiste .rund{width:44px;height:44px}
+.viewer-leiste .prozent{display:grid;place-items:center;min-width:64px;font-size:14px;color:var(--tx2);font-variant-numeric:tabular-nums}
+#viewer-inhalt{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;position:relative;overscroll-behavior:contain}
+#viewer-seiten{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0 20px;min-width:100%;width:max-content}
+.seite{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);position:relative;flex:none}
+.seite canvas{display:block}
+.seite .nr{position:absolute;inset:0;display:grid;place-items:center;color:#8a8f98;font-size:14px}
+#viewer-meldung{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(0,0,0,.65);color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;max-width:80%;text-align:center}
+#viewer-inhalt img{display:block;max-width:100%;margin:12px auto}
+#viewer-inhalt iframe{display:block;width:100%;height:100%;border:0;background:#fff}
+#viewer-inhalt pre{margin:0;padding:14px;color:#eee;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace}
+
+/* ═══════════════════════════ Toast ═══════════════════════════ */
+#toast{position:fixed;left:16px;right:16px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 14px);z-index:80;
+  background:var(--primary);color:#fff;padding:12px 16px;border-radius:14px;font-size:15px;box-shadow:var(--shadow);
+  opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s;pointer-events:none;text-align:center}
+#toast.zeig{opacity:1;transform:translateY(0)}
+@media (min-width:700px){ main,#kopf{max-width:720px;margin-left:auto;margin-right:auto} #tabbar,#toast{max-width:720px;margin:0 auto} #blatt{max-width:720px;margin:0 auto} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ Anmeldung ═══════════════════════════ -->
+<section id="anmeldung">
+  <form class="karte-login" id="login-form" autocomplete="on">
+    <div class="logo">
+      <img src="icons/icon-180.png" alt="">
+      <div><h1>Journal Mobil</h1><div class="unter">Agenda und Skripte – verschlüsselt</div></div>
+    </div>
+    <label class="feld"><span>Passwort</span>
+      <input type="password" id="login-pw" name="password" autocomplete="current-password" required autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+    </label>
+    <label class="haken"><input type="checkbox" id="login-merken" checked> Auf diesem iPhone angemeldet bleiben</label>
+    <button class="knopf" type="submit" id="login-knopf">Anmelden</button>
+    <div class="status" id="login-status"></div>
+  </form>
+</section>
+
+<!-- ═══════════════════════════ App ═══════════════════════════ -->
+<div id="app" class="versteckt">
+  <header id="kopf">
+    <div class="kopf-zeile">
+      <div style="flex:1;min-width:0">
+        <h1>Journal Mobil</h1>
+        <div class="sub"><span id="kopf-schuljahr"></span><span id="kopf-stand"></span><span class="marke-offline versteckt" id="kopf-offline">Offline</span></div>
+      </div>
+      <button class="rund" id="knopf-mehr" aria-label="Mehr">⚙︎</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="tab-agenda">
+      <div class="demnaechst" id="demnaechst">
+        <button class="kopf" id="demnaechst-kopf"><span>Demnächst</span><span class="pfeilchen">▾</span></button>
+        <div class="inhalt" id="demnaechst-inhalt"></div>
+      </div>
+      <div class="wochenleiste">
+        <button class="pfeil" id="woche-zurueck" aria-label="Vorige Woche">◀</button>
+        <div class="titel" id="woche-titel"></div>
+        <button class="pfeil" id="woche-vor" aria-label="Nächste Woche">▶</button>
+        <button class="heute-knopf" id="woche-heute">Heute</button>
+      </div>
+      <div id="agenda-tage"></div>
+    </section>
+
+    <section id="tab-skripte" class="versteckt">
+      <div class="filter">
+        <div class="chips" id="skripte-chips"></div>
+        <div class="suchzeile">
+          <input type="search" id="skripte-suche" placeholder="Titel, Modul, Dateiname …" autocomplete="off" autocapitalize="off">
+          <label class="schalter"><input type="checkbox" id="skripte-nur-sus"> nur Schüler</label>
+        </div>
+      </div>
+      <div id="skripte-liste"></div>
+    </section>
+  </main>
+
+  <nav id="tabbar">
+    <button data-tab="agenda" class="aktiv" aria-label="Agenda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M8 13h3M8 17h6"/></svg>
+      Agenda
+    </button>
+    <button data-tab="skripte" aria-label="Skripte">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/></svg>
+      Skripte
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════ Blatt ═══════════════════════════ -->
+<div id="blatt-hintergrund" class="versteckt"></div>
+<div id="blatt" class="versteckt" role="dialog" aria-modal="true">
+  <div class="blatt-griff"></div>
+  <div class="blatt-kopf"><h2 id="blatt-titel"></h2><button class="rund" id="blatt-zu" aria-label="Schließen">✕</button></div>
+  <div class="blatt-inhalt" id="blatt-inhalt"></div>
+</div>
+
+<!-- ═══════════════════════════ Viewer ═══════════════════════════ -->
+<div id="viewer" class="versteckt" role="dialog" aria-modal="true">
+  <div class="viewer-kopf">
+    <button class="rund" id="viewer-zu" aria-label="Schließen">✕</button>
+    <div class="titel" id="viewer-titel"></div>
+    <button class="seiten" id="viewer-seitenzahl"></button>
+    <button class="rund" id="viewer-teilen" aria-label="Teilen">⬆︎</button>
+    <button class="rund" id="viewer-safari" aria-label="In Safari öffnen">🧭</button>
+  </div>
+  <div id="viewer-inhalt"><div id="viewer-seiten"></div><div id="viewer-meldung" class="versteckt"></div></div>
+  <div class="viewer-leiste" id="viewer-leiste">
+    <button class="rund" id="viewer-minus" aria-label="Verkleinern">−</button>
+    <div class="prozent" id="viewer-prozent">100 %</div>
+    <button class="rund" id="viewer-plus" aria-label="Vergrößern">+</button>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script type="module">
+/* ═════════════════════════════════════════════════════════════════════════
+   Journal Mobil – die App
+   Gliederung: Hilfen · Krypto · Sitzung & Daten · Agenda-Logik · Agenda-Ansicht ·
+   Skripte-Ansicht · Blatt · Dateien & Viewer · Mehr · Aktualisierung · Start
+   ═════════════════════════════════════════════════════════════════════════ */
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SESSION_KEY = "jm_sitzung";
+const CACHE_NAME  = "jm-v1";
+const MIME = { pdf:"application/pdf", png:"image/png", jpg:"image/jpeg", jpeg:"image/jpeg", gif:"image/gif", webp:"image/webp",
+               html:"text/html", htm:"text/html", txt:"text/plain", md:"text/plain" };
+const mime = typ => MIME[String(typ||"").toLowerCase()] || "application/octet-stream";
+const ART_REIHE = ["Skript","Übungen","Übungen (Lösungen)","TP","TP (Lehrer)","Aufgaben (Lehrer)","Sonstiges"];
+const ZEITRAUM_REIHE = ["S1","S2","T1","T2","T3","Jahr"];
+const ZEITRAUM_TEXT = { S1:"1. Semester", S2:"2. Semester", T1:"1. Trimester", T2:"2. Trimester", T3:"3. Trimester", Jahr:"Ganzes Jahr" };
+const WOCHENTAGE = ["","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+const WOCHENTAGE_KURZ = ["","Mo","Di","Mi","Do","Fr","Sa","So"];
+const ERSATZ_FARBEN = ["#2E7DA1","#1F8A70","#4F8A10","#C26A00","#B9770E","#8E44AD","#16A085","#C0392B"];
+
+/* ─────────────────────────── Allgemeine Hilfen ─────────────────────────── */
+let toastTimer = null;
+function toast(msg, dauer = 3800){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("zeig");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("zeig"), dauer);
+}
+function lsLesen(k, standard){ try{ const v = localStorage.getItem(k); return v === null ? standard : v; }catch(e){ return standard; } }
+function lsSchreiben(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+function groesseText(b){
+  b = Number(b) || 0;
+  if(b < 100*1024) return Math.max(1, Math.round(b/1024)) + " KB";
+  return (b/1048576).toFixed(1).replace(".", ",") + " MB";
+}
+const pad2 = n => String(n).padStart(2, "0");
+const iso = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+function ausIso(s){ const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||"")); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+const addTage = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const heute = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const isoWochentag = d => (d.getDay() + 6) % 7 + 1;                       // 1 = Mo … 7 = So
+const montag = d => addTage(d, 1 - isoWochentag(d));
+function isoKW(d){
+  const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const tag = x.getUTCDay() || 7; x.setUTCDate(x.getUTCDate() + 4 - tag);
+  const j1 = new Date(Date.UTC(x.getUTCFullYear(), 0, 1));
+  return Math.ceil(((x - j1) / 86400000 + 1) / 7);
+}
+const fmtKurz  = d => `${WOCHENTAGE_KURZ[isoWochentag(d)]} ${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.`;          // Di 22.09.
+const fmtLang  = d => `${WOCHENTAGE[isoWochentag(d)]}, ${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`; // Dienstag, 22.09.2026
+const fmtTagMonat = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.`;
+function fmtStand(s){ const d = ausIso(s); if(!d) return ""; const m = /T(\d{2}):(\d{2})/.exec(s||""); return `${fmtTagMonat(d)}${m ? " " + m[1] + ":" + m[2] : ""}`; }
+const ganzzahl = v => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; };
+function hashFarbe(name){ let h = 0; for(const c of String(name)) h = (h*31 + c.charCodeAt(0)) >>> 0; return ERSATZ_FARBEN[h % ERSATZ_FARBEN.length]; }
+const sicheresObjekt = o => (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
+/* fetch() meldet Netzfehler als TypeError – Chrome „Failed to fetch“, Safari „Load failed“. */
+const istNetzfehler = e => e instanceof TypeError || /Failed to fetch|Load failed|NetworkError/i.test(String(e && e.message || ""));
+const fehlerText = e => istNetzfehler(e) ? "Keine Verbindung – Datei ist nicht offline gespeichert." : (e && e.message || String(e));
+const sichereListe  = l => Array.isArray(l) ? l : [];
+
+/* ─────────────────────────── Krypto (WebCrypto) ───────────────────────────
+   Muss zu build.py passen: PBKDF2-SHA256 → AES-256-GCM,
+   Manifeste und Dateien = 12-B-Nonce || Chiffrat (mit Tag). */
+function b64zu(s){ const bin = atob(s); const out = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i); return out; }
+async function leiteKekRoh(passwort, saltB64, iterationen){
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(passwort.normalize("NFC")), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name:"PBKDF2", salt:b64zu(saltB64), iterations:iterationen, hash:"SHA-256" }, material, 256);
+  return new Uint8Array(bits);
+}
+const importKek = roh => crypto.subtle.importKey("raw", roh, {name:"AES-GCM"}, false, ["decrypt"]);
+async function entschluesseleJSON(key, ivB64, ctB64){
+  const klar = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64zu(ivB64)}, key, b64zu(ctB64));
+  return JSON.parse(new TextDecoder().decode(klar));
+}
+const importiereVaultKey = kB64 => crypto.subtle.importKey("raw", b64zu(kB64), {name:"AES-GCM"}, false, ["decrypt"]);
+async function entschluesseleBlock(key, puffer){
+  const bytes = new Uint8Array(puffer);
+  if(bytes.length < 13) throw new Error("Datei beschädigt");
+  return crypto.subtle.decrypt({name:"AES-GCM", iv:bytes.slice(0,12)}, key, bytes.slice(12));
+}
+
+/* ─────────────────────────── Sitzung & Daten ─────────────────────────── */
+let SESSION = null;            // {label, vaults:[{id,k,manifest}], build}
+let INDEX = null;              // vaults/index.json
+let M = null;                  // zusammengeführtes Manifest (config, stundenplan, ferien, eintraege, skripte, statistik)
+let FINDEX = new Map();        // Datum → {name, art}
+const vaultKeys = new Map();   // vaultId → CryptoKey
+const blobCache = new Map();   // fid → {url, blob}
+let OFFLINE = !navigator.onLine;
+
+async function ladeIndex(){
+  const r = await fetch("vaults/index.json", {cache:"no-store"});
+  if(!r.ok) throw new Error("index.json fehlt (" + r.status + ")");
+  return r.json();
+}
+async function pruefePasswort(passwort, idx){
+  for(const pr of sichereListe(idx.principals)){
+    const kek = await importKek(await leiteKekRoh(passwort, pr.salt, (idx.kdf && idx.kdf.iter) || 600000));
+    const offen = [];
+    for(const v of sichereListe(idx.vaults)){
+      for(const w of sichereListe(v.wraps)){
+        if(w.p !== pr.id) continue;
+        try{
+          const nutz = await entschluesseleJSON(kek, w.iv, w.ct);
+          offen.push({ id:v.id, manifest:v.manifest, k:nutz.k, label:nutz.label || "" });
+        }catch(e){ /* dieser Zugang passt nicht zu diesem Vault */ }
+      }
+    }
+    if(offen.length) return { label: offen[0].label || "Leser", build: idx.build || "", vaults: offen.map(o => ({id:o.id, k:o.k, manifest:o.manifest})) };
+  }
+  return null;
+}
+function sitzungLesen(){
+  try{ const a = localStorage.getItem(SESSION_KEY); if(a) return {s:JSON.parse(a), merken:true}; }catch(e){}
+  try{ const b = sessionStorage.getItem(SESSION_KEY); if(b) return {s:JSON.parse(b), merken:false}; }catch(e){}
+  return null;
+}
+function sitzungSpeichern(s, merken){
+  const json = JSON.stringify(s);
+  try{ localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+  try{ (merken ? localStorage : sessionStorage).setItem(SESSION_KEY, json); }catch(e){}
+}
+function sitzungVerwerfen(){ try{ localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); }catch(e){} }
+async function vaultKey(vid){
+  let key = vaultKeys.get(vid);
+  if(!key){
+    const v = (SESSION.vaults || []).find(x => x.id === vid);
+    if(!v) throw new Error("Kein Zugriff auf diesen Tresor");
+    key = await importiereVaultKey(v.k); vaultKeys.set(vid, key);
+  }
+  return key;
+}
+/* Manifeste aller Tresore laden, entschlüsseln und zu einem Datenstand zusammenführen. */
+async function ladeManifeste(session){
+  const daten = { config:{}, stundenplan:{versionen:[], ausnahmen:[], zeitraster:[]}, ferien:{zeitraeume:[]}, eintraege:[], skripte:[],
+                  statistik:{}, schuljahr_text:"", erstellt:"", build:"" };
+  let eines = false;
+  for(const v of sichereListe(session.vaults)){
+    const key = await vaultKey(v.id);
+    const r = await fetch(v.manifest, {cache:"no-store"});
+    if(!r.ok){ const err = new Error("Manifest nicht erreichbar (" + r.status + ")"); err.status = r.status; throw err; }
+    const m = JSON.parse(new TextDecoder().decode(await entschluesseleBlock(key, await r.arrayBuffer())));
+    eines = true;
+    if(!Object.keys(daten.config).length) daten.config = sicheresObjekt(m.config);
+    const sp = sicheresObjekt(m.stundenplan);
+    daten.stundenplan.versionen.push(...sichereListe(sp.versionen));
+    daten.stundenplan.ausnahmen.push(...sichereListe(sp.ausnahmen));
+    if(!daten.stundenplan.zeitraster.length) daten.stundenplan.zeitraster = sichereListe(sp.zeitraster);
+    const f = sicheresObjekt(m.ferien);
+    if(!daten.ferien.beginn && f.beginn){ daten.ferien.beginn = f.beginn; daten.ferien.ende = f.ende; }
+    daten.ferien.zeitraeume.push(...sichereListe(f.zeitraeume));
+    for(const e of sichereListe(m.eintraege)){ e._vault = v.id; sichereListe(e.dateien).forEach(d => d._vault = v.id); daten.eintraege.push(e); }
+    for(const k of sichereListe(m.skripte)){ k._vault = v.id; daten.skripte.push(k); }
+    if(!daten.schuljahr_text) daten.schuljahr_text = m.schuljahr_text || m.schuljahr || "";
+    if(!daten.erstellt) daten.erstellt = m.erstellt || "";
+    if(!daten.build) daten.build = m.build || "";
+    const st = sicheresObjekt(m.statistik);
+    for(const [k, w] of Object.entries(st)) if(typeof w === "number") daten.statistik[k] = (daten.statistik[k] || 0) + w;
+  }
+  if(!eines) throw new Error("Kein Manifest gefunden");
+  if(!daten.stundenplan.zeitraster.length) daten.stundenplan.zeitraster = sichereListe(daten.config.zeitraster);
+  daten.eintraege.sort(eintragSortierung);
+  return daten;
+}
+
+/* ─────────────────────────── Agenda-Logik (Port aus server.py) ─────────────────────────── */
+function ferienIndex(ferien){
+  const index = new Map();
+  for(const z of sichereListe(ferien.zeitraeume)){
+    const von = ausIso(z.von); const bis = ausIso(z.bis) || von;
+    if(!von) continue;
+    const art = z.art || "ferien";
+    for(let t = new Date(von); t <= bis; t = addTage(t, 1)){
+      const k = iso(t), vorhanden = index.get(k);
+      // Der erste Treffer gewinnt; "info" überschreibt nie einen echten freien Tag.
+      if(!vorhanden || (vorhanden.art === "info" && art !== "info")) index.set(k, {name: z.name || "", art});
+    }
+  }
+  return index;
+}
+function imSchuljahr(tag){
+  const b = ausIso(M.ferien.beginn), e = ausIso(M.ferien.ende);
+  if(b && tag < b) return false;
+  if(e && tag > e) return false;
+  return true;
+}
+function istSchultag(tag){
+  if(isoWochentag(tag) === 7) return false;
+  if(!imSchuljahr(tag)) return false;
+  const eintrag = FINDEX.get(iso(tag));
+  if(eintrag && ["ferien","feiertag","sommer"].includes(eintrag.art)){
+    // Letzter Schultag: Sommerferien beginnen manchmal am selben Tag, an dem das Schuljahr endet → bleibt Schultag.
+    const ende = ausIso(M.ferien.ende);
+    if(ende && iso(tag) === iso(ende) && eintrag.art === "sommer") return true;
+    return false;
+  }
+  return true;
+}
+function gueltigeVersion(datum){
+  let beste = null;
+  for(const v of sichereListe(M.stundenplan.versionen)){
+    const ab = v.gueltig_ab || "";
+    if(ab && ab <= datum && (!beste || ab > (beste.gueltig_ab || ""))) beste = v;
+  }
+  return beste;   // vor der ältesten Version bewusst keine
+}
+function stundenAmTag(tag){
+  const datum = iso(tag), version = gueltigeVersion(datum), wochentag = isoWochentag(tag);
+  const ausnahmen = sichereListe(M.stundenplan.ausnahmen).filter(a => a.datum === datum);
+  const nachStunde = new Map();
+  for(const a of ausnahmen) if(a.stunde_id) nachStunde.set(a.stunde_id, a);
+  const ergebnis = [];
+  if(version && wochentag <= 6){
+    for(const s of sichereListe(version.stunden)){
+      if((ganzzahl(s.tag) || 0) !== wochentag) continue;
+      const kopie = {...s};
+      const a = nachStunde.get(s.id);
+      if(a && a.art === "geaendert" && a.stunde && typeof a.stunde === "object")
+        for(const [k, w] of Object.entries(a.stunde)) if(k !== "id") kopie[k] = w;
+      kopie.ausnahme = a ? {art:a.art, notiz:a.notiz || "", id:a.id} : null;
+      ergebnis.push(kopie);
+    }
+  }
+  // Zusatzstunden hängen direkt am Datum und stehen in keiner Version.
+  for(const a of ausnahmen){
+    if(a.art === "zusatz" && a.stunde && typeof a.stunde === "object"){
+      const kopie = {...a.stunde}; if(!kopie.id) kopie.id = a.id;
+      kopie.tag = wochentag; kopie.ausnahme = {art:"zusatz", notiz:a.notiz || "", id:a.id};
+      ergebnis.push(kopie);
+    }
+  }
+  ergebnis.sort((x, y) => ((ganzzahl(x.periode_von) || 0) - (ganzzahl(y.periode_von) || 0)) || String(x.klasse || "").localeCompare(String(y.klasse || "")));
+  return ergebnis;
+}
+function eintragSortierung(a, b){
+  const ka = [String(a.datum || ""), String(a.von || "~"), ganzzahl(a.periode_von) || 99, String(a.erstellt || "")];
+  const kb = [String(b.datum || ""), String(b.von || "~"), ganzzahl(b.periode_von) || 99, String(b.erstellt || "")];
+  for(let i = 0; i < 4; i++){ if(ka[i] < kb[i]) return -1; if(ka[i] > kb[i]) return 1; }
+  return 0;
+}
+function gehoertZuStunde(e, datum, s){
+  if(String(e.datum || "") !== datum) return false;
+  if(s.id && e.stunde_id && e.stunde_id === s.id) return true;
+  const kl = String(e.klasse || "");
+  if(kl && kl === String(s.klasse || "")){
+    const pv = ganzzahl(e.periode_von);
+    if(pv !== null && pv === ganzzahl(s.periode_von)) return true;
+  }
+  return false;
+}
+/* Alles, was die Ansicht für einen Tag braucht. */
+function tagDaten(tag){
+  const datum = iso(tag), schultag = istSchultag(tag);
+  let stunden = isoWochentag(tag) !== 7 ? stundenAmTag(tag) : [];
+  if(!schultag) stunden = stunden.filter(s => s.ausnahme && s.ausnahme.art === "zusatz");   // frei: nur Zusatzstunden
+  const eintraege = M.eintraege.filter(e => e.datum === datum);
+  const zugeordnet = new Set();
+  for(const s of stunden){ s.eintraege = eintraege.filter(e => gehoertZuStunde(e, datum, s)); s.eintraege.forEach(e => zugeordnet.add(e.id)); }
+  return { datum, tag, wochentag:isoWochentag(tag), schultag, ferien:FINDEX.get(datum) || null, stunden,
+           weitere: eintraege.filter(e => !zugeordnet.has(e.id)), imSchuljahr: imSchuljahr(tag) };
+}
+const istCdm = e => e.bereich === "CdM" || Object.prototype.hasOwnProperty.call(sicheresObjekt(M.config.cdm_kurse), String(e.klasse || ""));
+function klassenFarbe(klasse){
+  const k = sicheresObjekt(M.config.klassen)[klasse];
+  return (k && k.farbe) || hashFarbe(klasse);
+}
+function klassenName(klasse){
+  const k = sicheresObjekt(M.config.klassen)[klasse]; return (k && k.name) || klasse || "";
+}
+function cdmName(klasse){ const k = sicheresObjekt(M.config.cdm_kurse)[klasse]; return (k && k.name) || ("CdM · " + klasse); }
+function zeitraster(nr){ return sichereListe(M.stundenplan.zeitraster).find(z => ganzzahl(z.nr) === nr) || null; }
+function stundenZeit(s){
+  let von = s.von || "", bis = s.bis || "";
+  const pv = ganzzahl(s.periode_von), pb = ganzzahl(s.periode_bis) ?? pv;
+  if(!von && pv !== null){ const z = zeitraster(pv); if(z) von = z.von || ""; }
+  if(!bis && pb !== null){ const z = zeitraster(pb); if(z) bis = z.bis || ""; }
+  const zeit = von && bis ? `${von}–${bis}` : (von || bis || "");
+  const per = pv === null ? "" : (pb && pb !== pv ? `P${pv}–${pb}` : `P${pv}`);
+  return [zeit, per].filter(Boolean).join(" · ");
+}
+function ausnahmeMarke(a){
+  if(!a) return "";
+  const m = { entfaellt:["", "entfällt"], pruefung:["rot", "Prüfung"], geaendert:["gelb", "geändert"], zusatz:["blau", "Zusatzstunde"] }[a.art];
+  return m ? `<span class="marke ${m[0]}">${m[1]}</span>` : "";
+}
+function skripteZurStunde(s){
+  return M.skripte.filter(k => k.klasse === s.klasse && k.modul === s.fach).sort(skriptSortierung);
+}
+
+/* ─────────────────────────── Agenda-Ansicht ─────────────────────────── */
+let WOCHE_MONTAG = montag(heute());
+let WOCHE = [];                                     // tagDaten() der aktuellen Woche
+
+function wochenTitel(mo){
+  const sa = addTage(mo, 5);
+  let spanne;
+  if(mo.getFullYear() !== sa.getFullYear()) spanne = `${fmtTagMonat(mo)}${mo.getFullYear()}–${fmtTagMonat(sa)}${sa.getFullYear()}`;
+  else if(mo.getMonth() !== sa.getMonth()) spanne = `${fmtTagMonat(mo)}–${fmtTagMonat(sa)}${sa.getFullYear()}`;
+  else spanne = `${pad2(mo.getDate())}.–${fmtTagMonat(sa)}${sa.getFullYear()}`;
+  return `KW ${isoKW(mo)}<small>${spanne}</small>`;
+}
+function eintragZeileHTML(e){
+  const cdm = istCdm(e);
+  const typ = cdm ? `<span class="kl">${esc(cdmName(e.klasse))}</span> · ${esc(e.typ || "Eintrag")}` +
+                    (e.von ? ` · ${esc(e.von)}${e.bis ? "–" + esc(e.bis) : ""}` : "")
+                  : esc([e.typ || "Eintrag", e.klasse].filter(Boolean).join(" · "));
+  const erste = String(e.text || "").split(/\r?\n/).find(z => z.trim()) || "";
+  const n = sichereListe(e.dateien).length;
+  return `<button class="eintrag${cdm ? " cdm" : ""}" data-eid="${esc(e.id)}" data-datum="${esc(e.datum)}">
+    <span class="ampel ${esc(e.status || "")}"></span>
+    <span class="inhalt"><span class="typ">${typ}</span><b>${esc(e.titel || "(ohne Titel)")}</b>
+      ${erste ? `<span class="text">${esc(erste)}</span>` : ""}
+      ${n ? `<span class="anh">📎 ${n} ${n === 1 ? "Datei" : "Dateien"}</span>` : ""}</span></button>`;
+}
+function stundeHTML(t, s){
+  const farbe = klassenFarbe(s.klasse), a = s.ausnahme;
+  return `<article class="stunde${a && a.art === "entfaellt" ? " entfaellt" : ""}" style="--kf:${esc(farbe)}" data-sid="${esc(s.id)}" data-datum="${t.datum}" tabindex="0" role="button">
+    <div class="zeit"><span>${esc(stundenZeit(s))}</span>${ausnahmeMarke(a)}</div>
+    <div class="haupt">${esc(s.klasse || "")} · ${esc(s.fach || "")}</div>
+    ${s.raum ? `<div class="raum">Raum ${esc(s.raum)}</div>` : ""}
+    ${a && a.notiz ? `<div class="notiz">${esc(a.notiz)}</div>` : ""}
+    ${s.eintraege.length ? `<div class="eintraege">${s.eintraege.map(eintragZeileHTML).join("")}</div>` : ""}
+  </article>`;
+}
+function tagHTML(t){
+  const klassen = ["tag"];
+  if(t.datum === iso(heute())) klassen.push("heute");
+  if(!t.imSchuljahr) klassen.push("ausserhalb");
+  if(!t.schultag && t.wochentag !== 7) klassen.push("frei");
+  let banner = "";
+  if(t.ferien) banner = `<div class="banner${t.ferien.art === "info" ? " info" : ""}">${t.ferien.art === "info" ? "ℹ️ " : "🏖 "}${esc(t.ferien.name)}</div>`;
+  let inhalt = t.stunden.map(s => stundeHTML(t, s)).join("");
+  if(t.weitere.length) inhalt += `<div class="weitere"><h4>Weitere Einträge</h4><div class="eintraege">${t.weitere.map(eintragZeileHTML).join("")}</div></div>`;
+  if(!inhalt && !banner) inhalt = `<div class="leer">${t.schultag ? "Keine Stunden" : (t.imSchuljahr ? "Frei" : "Außerhalb des Schuljahres")}</div>`;
+  return `<section class="${klassen.join(" ")}" data-datum="${t.datum}">
+    <h3 class="tag-kopf"><span class="wt">${WOCHENTAGE[t.wochentag]}</span><span class="dt">${fmtTagMonat(t.tag)}</span></h3>${banner}${inhalt}</section>`;
+}
+function zeichneWoche(scrollZuHeute = false, sanft = false){
+  WOCHE = [];
+  for(let i = 0; i < 7; i++) WOCHE.push(tagDaten(addTage(WOCHE_MONTAG, i)));
+  const sichtbar = WOCHE.filter(t => t.wochentag !== 7 || t.weitere.length || t.stunden.length);   // Sonntag nur mit Einträgen
+  $("#woche-titel").innerHTML = wochenTitel(WOCHE_MONTAG);
+  $("#agenda-tage").innerHTML = sichtbar.map(tagHTML).join("");
+  if(scrollZuHeute){
+    // Heute in den Blick: kurz warten, damit Layout und Scroll-Wiederherstellung des Browsers durch sind.
+    const zuHeute = () => {
+      const el = $("#agenda-tage .tag.heute"); if(!el) return;
+      const kopf = $("#kopf").getBoundingClientRect().height;
+      const y = el.getBoundingClientRect().top + window.scrollY - kopf - 8;
+      // Beim Start springen (ein sanfter Scroll direkt nach dem Laden wird von manchen Browsern verworfen).
+      if(y > 40) window.scrollTo({top:y, behavior: sanft ? "smooth" : "auto"});
+    };
+    requestAnimationFrame(zuHeute); setTimeout(zuHeute, 120);
+  }
+}
+function zeigeWoche(datum, scrollZuHeute = false){
+  const d = typeof datum === "string" ? ausIso(datum) : datum;
+  if(!d) return;
+  WOCHE_MONTAG = montag(d);
+  zeichneWoche(scrollZuHeute);
+}
+$("#woche-zurueck").addEventListener("click", () => { WOCHE_MONTAG = addTage(WOCHE_MONTAG, -7); zeichneWoche(); window.scrollTo({top:0}); });
+$("#woche-vor").addEventListener("click", () => { WOCHE_MONTAG = addTage(WOCHE_MONTAG, 7); zeichneWoche(); window.scrollTo({top:0}); });
+$("#woche-heute").addEventListener("click", () => { WOCHE_MONTAG = montag(heute()); zeichneWoche(true, true); });
+
+/* Wischen links/rechts wechselt die Woche; vertikales Scrollen bleibt unberührt. */
+(function(){
+  let x0 = 0, y0 = 0, aktiv = false;
+  const el = $("#tab-agenda");
+  el.addEventListener("touchstart", ev => { if(ev.touches.length !== 1) return; x0 = ev.touches[0].clientX; y0 = ev.touches[0].clientY; aktiv = true; }, {passive:true});
+  el.addEventListener("touchend", ev => {
+    if(!aktiv) return; aktiv = false;
+    const t = ev.changedTouches[0]; const dx = t.clientX - x0, dy = t.clientY - y0;
+    if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    WOCHE_MONTAG = addTage(WOCHE_MONTAG, dx < 0 ? 7 : -7); zeichneWoche(); window.scrollTo({top:0});
+  }, {passive:true});
+})();
+
+/* Tippen auf Stunde oder Eintrag → Detail-Blatt */
+$("#agenda-tage").addEventListener("click", ev => {
+  const e = ev.target.closest(".eintrag");
+  if(e){ ev.stopPropagation(); const eintrag = M.eintraege.find(x => x.id === e.dataset.eid); if(eintrag) zeigeEintragBlatt(eintrag); return; }
+  const s = ev.target.closest(".stunde");
+  if(s){ const t = WOCHE.find(x => x.datum === s.dataset.datum); const st = t && t.stunden.find(x => x.id === s.dataset.sid); if(st) zeigeStundeBlatt(t, st); }
+});
+
+/* „Demnächst“: nächste Prüfungen und offene Einträge */
+function zeichneDemnaechst(){
+  const h = iso(heute());
+  const pruefungen = [];
+  for(const e of M.eintraege) if(e.typ === "Prüfung" && e.datum >= h) pruefungen.push({datum:e.datum, titel:e.titel || "Prüfung", sub:[e.klasse, e.fach].filter(Boolean).join(" · "), eid:e.id});
+  for(const a of sichereListe(M.stundenplan.ausnahmen)){
+    if(a.art !== "pruefung" || !(a.datum >= h)) continue;
+    const d = ausIso(a.datum); const st = d ? stundenAmTag(d).find(s => s.id === a.stunde_id) : null;
+    pruefungen.push({datum:a.datum, titel:a.notiz || "Prüfung", sub:st ? `${st.klasse} · ${st.fach}` : "Stundenplan", sid:a.stunde_id});
+  }
+  pruefungen.sort((x, y) => x.datum.localeCompare(y.datum));
+  const offen = M.eintraege.filter(e => e.status === "rot" || e.status === "gelb")
+    .sort((x, y) => { const ax = x.datum >= h, ay = y.datum >= h; if(ax !== ay) return ax ? -1 : 1; return ax ? x.datum.localeCompare(y.datum) : y.datum.localeCompare(x.datum); });
+  const zeile = (o, ampel) => { const d = ausIso(o.datum);
+    return `<button class="zeile" data-datum="${esc(o.datum)}" ${o.eid ? `data-eid="${esc(o.eid)}"` : `data-sid="${esc(o.sid || "")}"`}>
+      <span class="datum">${d ? fmtKurz(d) : esc(o.datum)}</span>${ampel ? `<span class="ampel ${esc(ampel)}" style="margin-top:0"></span>` : ""}
+      <span class="was"><b>${esc(o.titel)}</b><span>${esc(o.sub)}</span></span></button>`; };
+  let html = "";
+  if(pruefungen.length) html += `<h4>Nächste Prüfungen</h4>` + pruefungen.slice(0, 5).map(p => zeile(p)).join("");
+  if(offen.length) html += `<h4>Offene Einträge</h4>` + offen.slice(0, 5).map(e => zeile({datum:e.datum, titel:e.titel || "(ohne Titel)", sub:[e.typ, istCdm(e) ? cdmName(e.klasse) : e.klasse].filter(Boolean).join(" · "), eid:e.id}, e.status)).join("");
+  $("#demnaechst-inhalt").innerHTML = html || `<div class="leer">Nichts Offenes, keine Prüfung in Sicht.</div>`;
+  $("#demnaechst").classList.toggle("zu", lsLesen("jm_demnaechst", "offen") === "zu");
+}
+$("#demnaechst-kopf").addEventListener("click", () => {
+  const zu = $("#demnaechst").classList.toggle("zu"); lsSchreiben("jm_demnaechst", zu ? "zu" : "offen");
+});
+$("#demnaechst-inhalt").addEventListener("click", ev => {
+  const z = ev.target.closest(".zeile"); if(!z) return;
+  zeigeWoche(z.dataset.datum);
+  const t = WOCHE.find(x => x.datum === z.dataset.datum);
+  if(z.dataset.eid){ const e = M.eintraege.find(x => x.id === z.dataset.eid); if(e) zeigeEintragBlatt(e); }
+  else if(t){ const s = t.stunden.find(x => x.id === z.dataset.sid); if(s) zeigeStundeBlatt(t, s); }
+});
+
+/* ─────────────────────────── Skripte-Ansicht ─────────────────────────── */
+let SK_FILTER = { klasse:"", suche:"", nurSus:false };
+function skriptSortierung(a, b){
+  const ia = ART_REIHE.indexOf(a.art), ib = ART_REIHE.indexOf(b.art);
+  return ((ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)) || String(a.sprache || "").localeCompare(String(b.sprache || "")) || String(a.titel || "").localeCompare(String(b.titel || ""), "de");
+}
+function klassenReihenfolge(){
+  const cfg = Object.keys(sicheresObjekt(M.config.klassen));
+  const vorhanden = [...new Set(M.skripte.map(k => String(k.klasse || "")).filter(Boolean))];
+  return vorhanden.sort((a, b) => { const ia = cfg.indexOf(a), ib = cfg.indexOf(b); return ((ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)) || a.localeCompare(b); });
+}
+function zeichneSkripteChips(){
+  const alle = klassenReihenfolge();
+  if(SK_FILTER.klasse && !alle.includes(SK_FILTER.klasse)) SK_FILTER.klasse = "";
+  $("#skripte-chips").innerHTML = [`<button class="chip${!SK_FILTER.klasse ? " aktiv" : ""}" data-klasse="">Alle</button>`]
+    .concat(alle.map(k => `<button class="chip${SK_FILTER.klasse === k ? " aktiv" : ""}" data-klasse="${esc(k)}" style="--kf:${esc(klassenFarbe(k))}">${esc(k)}</button>`)).join("");
+}
+function skriptZeileHTML(k){
+  const gesperrt = !k.fid;
+  const marken = [k.art && k.art !== "Skript" ? `<span class="marke">${esc(k.art)}</span>` : "",
+                  k.sprache ? `<span class="marke blau">${esc(k.sprache)}</span>` : "",
+                  k.nur_lehrer ? `<span class="marke gelb">nur Lehrer</span>` : ""].filter(Boolean).join("");
+  const meta = [k.seiten ? `${k.seiten} S.` : "", k.groesse ? groesseText(k.groesse) : ""].filter(Boolean).join(" · ");
+  return `<button class="skript${gesperrt ? " gesperrt" : ""}" data-kid="${esc(k.id)}" ${gesperrt ? "disabled" : ""}>
+    <span class="ikon">📕</span><span class="inhalt"><span class="st">${esc(k.titel || k.name || "(ohne Titel)")}</span>
+    ${marken ? `<span class="marken">${marken}</span>` : ""}
+    <span class="meta">${gesperrt ? esc(k.hinweis || "nicht auf dem Handy verfügbar") : esc(meta)}</span></span></button>`;
+}
+function zeichneSkripte(){
+  const q = SK_FILTER.suche.trim().toLowerCase();
+  const liste = M.skripte.filter(k => (!SK_FILTER.klasse || k.klasse === SK_FILTER.klasse) && (!SK_FILTER.nurSus || !k.nur_lehrer) &&
+    (!q || [k.titel, k.modul, k.name].some(f => String(f || "").toLowerCase().includes(q))));
+  const proKlasse = new Map();
+  for(const k of liste){ const kl = String(k.klasse || "?"); if(!proKlasse.has(kl)) proKlasse.set(kl, []); proKlasse.get(kl).push(k); }
+  const reihe = klassenReihenfolge();
+  const html = [...proKlasse.entries()].sort((a, b) => reihe.indexOf(a[0]) - reihe.indexOf(b[0])).map(([kl, ks]) => {
+    const gruppen = new Map();
+    for(const k of ks){ const z = k.zeitraum || "Jahr"; if(!gruppen.has(z)) gruppen.set(z, new Map()); const g = gruppen.get(z); const mod = k.modul || "–"; if(!g.has(mod)) g.set(mod, []); g.get(mod).push(k); }
+    const gruppenHtml = [...gruppen.entries()].sort((a, b) => (ZEITRAUM_REIHE.indexOf(a[0]) + 1 || 99) - (ZEITRAUM_REIHE.indexOf(b[0]) + 1 || 99)).map(([z, mods]) =>
+      `<div class="gruppe"><h4>${esc(ZEITRAUM_TEXT[z] || z)}</h4>` + [...mods.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([mod, list]) =>
+        `<div class="modul"><span class="badge">${esc(mod)}</span><span>${list.length} ${list.length === 1 ? "Datei" : "Dateien"}</span></div>` + list.sort(skriptSortierung).map(skriptZeileHTML).join("")).join("") + `</div>`).join("");
+    return `<section class="klasse" style="--kf:${esc(klassenFarbe(kl))}"><div class="kopf"><span>${esc(klassenName(kl))}</span><small>${ks.length} PDF</small></div>${gruppenHtml}</section>`;
+  }).join("");
+  $("#skripte-liste").innerHTML = html || `<div class="leer">Keine Skripte gefunden.</div>`;
+}
+$("#skripte-chips").addEventListener("click", ev => { const c = ev.target.closest(".chip"); if(!c) return; SK_FILTER.klasse = c.dataset.klasse; zeichneSkripteChips(); zeichneSkripte(); });
+$("#skripte-suche").addEventListener("input", ev => { SK_FILTER.suche = ev.target.value; zeichneSkripte(); });
+$("#skripte-nur-sus").addEventListener("change", ev => { SK_FILTER.nurSus = ev.target.checked; zeichneSkripte(); });
+$("#skripte-liste").addEventListener("click", ev => {
+  const b = ev.target.closest(".skript"); if(!b || b.disabled) return;
+  const k = M.skripte.find(x => x.id === b.dataset.kid); if(k) oeffneDatei({fid:k.fid, name:k.name, typ:k.typ || "pdf", titel:k.titel || k.name, vault:k._vault});
+});
+
+/* ─────────────────────────── Tabs ─────────────────────────── */
+let heuteGezeigt = false;                             // wurde „heute“ seit dem Start schon angescrollt?
+function zeigeTab(name){
+  $$("#tabbar button").forEach(b => b.classList.toggle("aktiv", b.dataset.tab === name));
+  $("#tab-agenda").classList.toggle("versteckt", name !== "agenda");
+  $("#tab-skripte").classList.toggle("versteckt", name !== "skripte");
+  lsSchreiben("jm_tab", name);
+  window.scrollTo({top:0});
+  // Startet die App auf „Skripte“, holt der erste Wechsel zur Agenda den heutigen Tag in den Blick.
+  if(name === "agenda" && !heuteGezeigt){ heuteGezeigt = true; if(iso(montag(heute())) === iso(WOCHE_MONTAG)) zeichneWoche(true); }
+}
+$("#tabbar").addEventListener("click", ev => { const b = ev.target.closest("button[data-tab]"); if(b) zeigeTab(b.dataset.tab); });
+
+/* ─────────────────────────── Overlays & Zurück-Geste ───────────────────────────
+   Jedes offene Blatt / der Viewer legt einen History-Eintrag an; „zurück“ schließt
+   das oberste Overlay statt die App zu verlassen. */
+const overlayStapel = [];
+function overlayOeffnen(id, schliessen){
+  overlayStapel.push({id, schliessen});
+  history.pushState({jm:id, tiefe:overlayStapel.length}, "");
+}
+function overlaySchliessen(id){
+  const i = overlayStapel.findIndex(o => o.id === id);
+  if(i < 0) return;
+  if(i === overlayStapel.length - 1) history.back();
+  else { const [o] = overlayStapel.splice(i, 1); o.schliessen(); }
+}
+window.addEventListener("popstate", ev => {
+  const tiefe = (ev.state && ev.state.tiefe) || 0;
+  while(overlayStapel.length > tiefe){ const o = overlayStapel.pop(); o.schliessen(); }
+});
+history.replaceState({tiefe:0}, "");
+try{ history.scrollRestoration = "manual"; }catch(e){}
+
+/* ─────────────────────────── Blatt (bottom sheet) ─────────────────────────── */
+function blattOeffnen(titel, html){
+  const b = $("#blatt"), h = $("#blatt-hintergrund");
+  $("#blatt-titel").textContent = titel; $("#blatt-inhalt").innerHTML = html; $("#blatt-inhalt").scrollTop = 0;
+  const schonOffen = overlayStapel.some(o => o.id === "blatt");
+  b.classList.remove("versteckt"); h.classList.remove("versteckt");
+  requestAnimationFrame(() => { b.classList.add("offen"); h.classList.add("offen"); });
+  document.body.classList.add("gesperrt");
+  if(!schonOffen) overlayOeffnen("blatt", () => {
+    b.classList.remove("offen"); h.classList.remove("offen"); document.body.classList.remove("gesperrt");
+    setTimeout(() => { if(!b.classList.contains("offen")){ b.classList.add("versteckt"); h.classList.add("versteckt"); $("#blatt-inhalt").innerHTML = ""; } }, 260);
+  });
+}
+$("#blatt-zu").addEventListener("click", () => overlaySchliessen("blatt"));
+$("#blatt-hintergrund").addEventListener("click", () => overlaySchliessen("blatt"));
+/* Griff nach unten ziehen schließt das Blatt */
+(function(){ let y0 = null; const b = $("#blatt");
+  b.querySelector(".blatt-griff").parentElement.addEventListener("touchstart", ev => { if(ev.target.closest(".blatt-inhalt")) return; y0 = ev.touches[0].clientY; }, {passive:true});
+  b.addEventListener("touchend", ev => { if(y0 === null) return; const dy = ev.changedTouches[0].clientY - y0; y0 = null; if(dy > 80) overlaySchliessen("blatt"); }, {passive:true});
+})();
+
+function dateiListeHTML(dateien){
+  const l = sichereListe(dateien); if(!l.length) return "";
+  return `<ul class="dateien">` + l.map((d, i) => `<li><span class="name">${esc(d.name || "Datei")}<small>${esc([String(d.typ || "").toUpperCase(), d.groesse ? groesseText(d.groesse) : "", d.hinweis || ""].filter(Boolean).join(" · "))}</small></span>
+    <button class="mini" data-datei="${i}" data-aktion="oeffnen" ${d.fid ? "" : "disabled"}>Öffnen</button>
+    <button class="mini" data-datei="${i}" data-aktion="teilen" ${d.fid ? "" : "disabled"}>Teilen</button></li>`).join("") + `</ul>`;
+}
+function eintragDetailHTML(e, mitKopf = true){
+  const cdm = istCdm(e), d = ausIso(e.datum);
+  const zeile1 = [cdm ? cdmName(e.klasse) : e.klasse, e.typ || "Eintrag", e.von ? `${e.von}${e.bis ? "–" + e.bis : ""}` : "", e.raum ? "Raum " + e.raum : ""].filter(Boolean);
+  const statusText = {rot:"offen", gelb:"in Arbeit", gruen:"erledigt"}[e.status] || "";
+  return `<div class="detail-eintrag" data-eid="${esc(e.id)}"${cdm ? ` style="border-left:5px solid var(--cdm)"` : ""}>
+    <div class="zeile1"><span class="ampel ${esc(e.status || "")}" style="margin-top:0"></span><span>${esc(zeile1.join(" · "))}${statusText ? " · " + statusText : ""}</span></div>
+    ${mitKopf && d ? `<div style="font-size:13px;color:var(--tx3)">${fmtLang(d)}</div>` : ""}
+    <b>${esc(e.titel || "(ohne Titel)")}</b>
+    ${e.text ? `<div class="volltext">${esc(e.text)}</div>` : ""}
+    ${sichereListe(e.tags).length ? `<div style="margin-top:6px">${e.tags.map(t => `<span class="marke">${esc(t)}</span> `).join("")}</div>` : ""}
+    ${dateiListeHTML(e.dateien)}</div>`;
+}
+function skriptKnopfHTML(k){
+  const meta = [k.art, k.sprache, k.seiten ? `${k.seiten} S.` : ""].filter(Boolean).join(" · ");
+  return `<button class="skript-knopf" data-kid="${esc(k.id)}" ${k.fid ? "" : "disabled style='opacity:.5'"}>📕 <span class="st">${esc(k.titel || k.name || "")}${k.nur_lehrer ? ` <span class="marke gelb">nur Lehrer</span>` : ""}</span><span class="meta">${esc(meta)}</span></button>`;
+}
+function zeigeStundeBlatt(t, s){
+  const farbe = klassenFarbe(s.klasse), a = s.ausnahme, skripte = skripteZurStunde(s);
+  const html = `<div class="detail-kopf" style="--kf:${esc(farbe)}">
+      <div class="zeit"><span>${esc(stundenZeit(s))}</span>${ausnahmeMarke(a)}</div>
+      <div class="haupt">${esc(s.klasse || "")} · ${esc(s.fach || "")}</div>
+      ${s.raum ? `<div class="raum">Raum ${esc(s.raum)}${s.klasse_roh && s.klasse_roh !== s.klasse ? " · " + esc(s.klasse_roh) : ""}</div>` : ""}
+      ${a && a.notiz ? `<div class="notiz">${esc(a.notiz)}</div>` : ""}</div>
+    <div class="abschnitt"><h3>Einträge</h3>${s.eintraege.length ? s.eintraege.map(e => eintragDetailHTML(e, false)).join("") : `<div class="leer">Keine Einträge zu dieser Stunde.</div>`}</div>
+    <div class="abschnitt"><h3>Skripte dieser Stunde</h3>${skripte.length ? skripte.map(skriptKnopfHTML).join("") : `<div class="leer">Kein Skript zu ${esc(s.fach || "diesem Fach")} hinterlegt.</div>`}</div>`;
+  blattOeffnen(fmtLang(t.tag), html);
+}
+function zeigeEintragBlatt(e){
+  const d = ausIso(e.datum);
+  blattOeffnen(d ? fmtLang(d) : "Eintrag", eintragDetailHTML(e, false));
+}
+$("#blatt-inhalt").addEventListener("click", ev => {
+  const kb = ev.target.closest(".skript-knopf");
+  if(kb){ const k = M.skripte.find(x => x.id === kb.dataset.kid); if(k && k.fid) oeffneDatei({fid:k.fid, name:k.name, typ:k.typ || "pdf", titel:k.titel || k.name, vault:k._vault}); return; }
+  const mb = ev.target.closest(".mini[data-datei]");
+  if(mb){
+    const box = mb.closest(".detail-eintrag"); const e = box && M.eintraege.find(x => x.id === box.dataset.eid);
+    const d = e && sichereListe(e.dateien)[+mb.dataset.datei]; if(!d || !d.fid) return;
+    const meta = {fid:d.fid, name:d.name, typ:d.typ || (String(d.name || "").split(".").pop() || "").toLowerCase(), titel:d.name, vault:d._vault};
+    if(mb.dataset.aktion === "teilen") teileDatei(meta, mb); else oeffneDatei(meta);
+    return;
+  }
+  const mk = ev.target.closest("[data-mehr]");
+  if(mk) mehrAktion(mk.dataset.mehr, mk);
+});
+
+/* ─────────────────────────── Dateien laden & teilen ─────────────────────────── */
+async function holeBlob(meta){
+  if(blobCache.has(meta.fid)) return blobCache.get(meta.fid);
+  const vid = meta.vault || (SESSION.vaults[0] && SESSION.vaults[0].id);
+  const key = await vaultKey(vid);
+  const r = await fetch(`vaults/${vid}/f/${meta.fid}.enc`);
+  if(!r.ok) throw new Error(r.status === 404 ? "Datei nicht im Tresor" : "Laden fehlgeschlagen (" + r.status + ")");
+  const klar = await entschluesseleBlock(key, await r.arrayBuffer());
+  const blob = new Blob([klar], {type:mime(meta.typ)});
+  const eintrag = {blob, url:URL.createObjectURL(blob)};
+  blobCache.set(meta.fid, eintrag);
+  return eintrag;
+}
+function dateiName(meta){ const n = String(meta.name || "datei"); return /\.[a-z0-9]{1,5}$/i.test(n) ? n : (meta.typ ? `${n}.${meta.typ}` : n); }
+function ladeHerunter(url, name){ const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+async function teileDatei(meta, knopf){
+  if(knopf) knopf.disabled = true;
+  try{
+    const {blob, url} = await holeBlob(meta);
+    const datei = new File([blob], dateiName(meta), {type:blob.type});
+    if(navigator.canShare && navigator.canShare({files:[datei]})){
+      try{ await navigator.share({files:[datei], title:meta.titel || meta.name}); }catch(e){ if(e && e.name !== "AbortError") throw e; }
+    } else { ladeHerunter(url, dateiName(meta)); toast("Teilen wird hier nicht unterstützt – Datei wird heruntergeladen."); }
+  }catch(e){ toast("Teilen fehlgeschlagen: " + fehlerText(e)); }
+  finally{ if(knopf) knopf.disabled = false; }
+}
+
+/* ─────────────────────────── Viewer (pdf.js, Bilder, Text) ─────────────────────────── */
+const V = { offen:false, meta:null, doc:null, seiten:[], zoom:1, fit:1, gen:0, io:null, aufgaben:new Map(), sichtbar:new Set(), n:0, h0:0, w0:0, aktuelleSeite:1, planer:0 };
+let pdfjsPromise = null;
+function ladePdfJs(){
+  if(!pdfjsPromise) pdfjsPromise = import("./lib/pdf.min.mjs").then(lib => { lib.GlobalWorkerOptions.workerSrc = "./lib/pdf.worker.min.mjs"; return lib; })
+    .catch(e => { pdfjsPromise = null; throw new Error("PDF-Bibliothek konnte nicht geladen werden"); });
+  return pdfjsPromise;
+}
+function viewerMeldung(text){ const m = $("#viewer-meldung"); if(text){ m.textContent = text; m.classList.remove("versteckt"); } else m.classList.add("versteckt"); }
+function viewerAufraeumen(){
+  if(V.io){ V.io.disconnect(); V.io = null; }
+  for(const t of V.aufgaben.values()) try{ t.cancel(); }catch(e){}
+  V.aufgaben.clear(); V.sichtbar.clear(); V.seiten = [];
+  if(V.doc){ try{ V.doc.destroy(); }catch(e){} V.doc = null; }
+  const inhalt = $("#viewer-inhalt");
+  inhalt.querySelectorAll("img,iframe,pre").forEach(x => x.remove());
+  $("#viewer-seiten").innerHTML = "";
+  viewerMeldung("");
+}
+async function oeffneDatei(meta){
+  if(!meta || !meta.fid){ toast("Diese Datei ist auf dem Handy nicht verfügbar."); return; }
+  if(V.offen) return;                                  // Doppeltippen: Viewer ist schon offen
+  const v = $("#viewer");
+  V.meta = meta; V.offen = true;
+  $("#viewer-titel").textContent = meta.titel || meta.name || "Datei";
+  $("#viewer-seitenzahl").textContent = ""; $("#viewer-leiste").classList.add("versteckt");
+  v.classList.remove("versteckt"); requestAnimationFrame(() => v.classList.add("offen"));
+  document.body.classList.add("gesperrt");
+  overlayOeffnen("viewer", () => {
+    V.offen = false; v.classList.remove("offen");
+    if(!overlayStapel.some(o => o.id === "blatt")) document.body.classList.remove("gesperrt");
+    setTimeout(() => { if(!V.offen){ v.classList.add("versteckt"); viewerAufraeumen(); } }, 260);
+  });
+  viewerAufraeumen();
+  viewerMeldung("Entschlüssele …");
+  try{
+    const {blob, url} = await holeBlob(meta);
+    if(!V.offen || V.meta !== meta) return;
+    const typ = String(meta.typ || "").toLowerCase();
+    if(typ === "pdf") await zeigePdf(blob);
+    else if(["png","jpg","jpeg","gif","webp"].includes(typ)){ const img = document.createElement("img"); img.src = url; img.alt = meta.name || ""; $("#viewer-inhalt").appendChild(img); viewerMeldung(""); }
+    else if(["html","htm"].includes(typ)){ const f = document.createElement("iframe"); f.setAttribute("sandbox", "allow-scripts"); f.src = url; $("#viewer-inhalt").appendChild(f); viewerMeldung(""); }
+    else if(["txt","md"].includes(typ)){ const p = document.createElement("pre"); p.textContent = await blob.text(); $("#viewer-inhalt").appendChild(p); viewerMeldung(""); }
+    else { viewerMeldung("Dieser Dateityp kann nicht angezeigt werden – bitte teilen oder herunterladen."); }
+  }catch(e){
+    console.warn(e);
+    viewerMeldung("Fehler: " + fehlerText(e));
+    toast("Datei konnte nicht geöffnet werden: " + fehlerText(e));
+  }
+}
+$("#viewer-zu").addEventListener("click", () => overlaySchliessen("viewer"));
+$("#viewer-teilen").addEventListener("click", ev => { if(V.meta) teileDatei(V.meta, ev.currentTarget); });
+/* In der Home-Bildschirm-App (navigator.standalone) öffnet window.open ein fremdes Safari-Fenster,
+   das die Blob-URL dieses Kontexts nicht kennt → Knopf dort ausblenden; „Teilen“ bleibt. */
+if(navigator.standalone === true) $("#viewer-safari").classList.add("versteckt");
+$("#viewer-safari").addEventListener("click", () => {
+  if(!V.meta) return;
+  const meta = V.meta;
+  const oeffnen = url => { const w = window.open(url, "_blank"); if(!w){ ladeHerunter(url, dateiName(meta)); toast("Pop-up blockiert – Datei wurde heruntergeladen."); } };
+  // Noch innerhalb der Tipp-Geste öffnen, wenn die Datei schon entschlüsselt vorliegt (sonst sperrt Safari das Pop-up).
+  const vorhanden = blobCache.get(meta.fid);
+  if(vorhanden){ oeffnen(vorhanden.url); return; }
+  holeBlob(meta).then(({url}) => oeffnen(url)).catch(e => toast("Öffnen fehlgeschlagen: " + (e.message || e)));
+});
+
+/* PDF: Seiten untereinander, Breite = Bildschirmbreite, nur Sichtbereich ± 2 gerendert. */
+async function zeigePdf(blob){
+  const pdfjs = await ladePdfJs();
+  viewerMeldung("Lade PDF …");
+  const doc = await pdfjs.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise;
+  if(!V.offen) { doc.destroy(); return; }
+  V.doc = doc; V.n = doc.numPages; V.gen++;
+  const erste = await doc.getPage(1); const vp = erste.getViewport({scale:1});
+  V.w0 = vp.width; V.h0 = vp.height;
+  V.zoom = 1; V.fit = ($("#viewer-inhalt").clientWidth || window.innerWidth) / V.w0;
+  const wurzel = $("#viewer-seiten"); wurzel.innerHTML = "";
+  V.seiten = [];
+  for(let i = 1; i <= V.n; i++){
+    const el = document.createElement("div"); el.className = "seite"; el.dataset.nr = i;
+    el.innerHTML = `<span class="nr">${i}</span>`;
+    wurzel.appendChild(el); V.seiten.push(el);
+  }
+  seitenMasse();
+  $("#viewer-leiste").classList.remove("versteckt");
+  $("#viewer-prozent").textContent = "100 %";
+  V.io = new IntersectionObserver(eintraege => {
+    for(const e of eintraege){ const nr = +e.target.dataset.nr; if(e.isIntersecting) V.sichtbar.add(nr); else V.sichtbar.delete(nr); }
+    planeRendern();
+  }, {root: $("#viewer-inhalt"), rootMargin:"40% 0px"});
+  V.seiten.forEach(el => V.io.observe(el));
+  viewerMeldung("");
+  // Letzte Seite anspringen
+  const merk = parseInt(lsLesen("jm_seite_" + V.meta.fid, "1"), 10) || 1;
+  if(merk > 1 && merk <= V.n) $("#viewer-inhalt").scrollTop = V.seiten[merk-1].offsetTop - 8;
+  seiteAnzeigen(merk);
+}
+function seitenMasse(){
+  const s = V.fit * V.zoom;
+  for(const el of V.seiten){ if(el.dataset.stand !== String(V.gen)){ el.style.width = (V.w0 * s) + "px"; el.style.height = (V.h0 * s) + "px"; } }
+}
+function planeRendern(){
+  if(V.planer) return;
+  V.planer = requestAnimationFrame(() => { V.planer = 0; rendereBereich(); });
+}
+function rendereBereich(){
+  if(!V.doc) return;
+  const sicht = [...V.sichtbar];
+  if(!sicht.length) return;
+  const von = Math.max(1, Math.min(...sicht) - 2), bis = Math.min(V.n, Math.max(...sicht) + 2);
+  for(let nr = 1; nr <= V.n; nr++){
+    const el = V.seiten[nr-1];
+    if(nr >= von && nr <= bis){ if(el.dataset.stand !== String(V.gen) && !V.aufgaben.has(nr)) rendereSeite(nr); }
+    else if(el.querySelector("canvas") || V.aufgaben.has(nr)) seiteFreigeben(nr);
+  }
+}
+function seiteFreigeben(nr){
+  const el = V.seiten[nr-1]; const t = V.aufgaben.get(nr); if(t){ try{ t.cancel(); }catch(e){} V.aufgaben.delete(nr); }
+  const c = el.querySelector("canvas"); if(c){ c.width = 0; c.height = 0; c.remove(); }
+  delete el.dataset.stand; el.innerHTML = `<span class="nr">${nr}</span>`;
+}
+async function rendereSeite(nr){
+  const gen = V.gen, el = V.seiten[nr-1];
+  try{
+    const page = await V.doc.getPage(nr);
+    if(gen !== V.gen || !V.doc) return;
+    const s = V.fit * V.zoom, vp = page.getViewport({scale:s});
+    let dpr = Math.min(window.devicePixelRatio || 1, 3);
+    // Speichergrenze: bis zu 7 Seiten sind gleichzeitig gezeichnet; 6 MPx × 4 B × 7 ≈ 170 MB bleibt unter dem iOS-Limit.
+    const grenze = 6000000; if(vp.width * vp.height * dpr * dpr > grenze) dpr = Math.sqrt(grenze / (vp.width * vp.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(vp.width * dpr); canvas.height = Math.floor(vp.height * dpr);
+    canvas.style.width = vp.width + "px"; canvas.style.height = vp.height + "px";
+    const aufgabe = page.render({canvasContext: canvas.getContext("2d", {alpha:false}), viewport: vp, transform: dpr !== 1 ? [dpr,0,0,dpr,0,0] : null});
+    V.aufgaben.set(nr, aufgabe);
+    await aufgabe.promise;
+    V.aufgaben.delete(nr);
+    if(gen !== V.gen || !V.doc) return;
+    el.style.width = vp.width + "px"; el.style.height = vp.height + "px";
+    el.replaceChildren(canvas); el.dataset.stand = String(gen);
+  }catch(e){
+    V.aufgaben.delete(nr);
+    if(e && e.name === "RenderingCancelledException") return;
+    console.warn("Seite", nr, e); toast(`Seite ${nr} konnte nicht gezeichnet werden.`);
+  }
+}
+function setzeZoom(neu){
+  neu = Math.min(3, Math.max(0.75, Math.round(neu * 100) / 100));
+  if(!V.doc || neu === V.zoom) return;
+  const inhalt = $("#viewer-inhalt"); const anteil = inhalt.scrollHeight ? inhalt.scrollTop / inhalt.scrollHeight : 0;
+  V.zoom = neu; V.gen++;
+  for(let nr = 1; nr <= V.n; nr++) seiteFreigeben(nr);
+  seitenMasse();
+  $("#viewer-prozent").textContent = Math.round(V.zoom * 100) + " %";
+  inhalt.scrollTop = anteil * inhalt.scrollHeight;
+  planeRendern();
+}
+$("#viewer-minus").addEventListener("click", () => setzeZoom(V.zoom - 0.25));
+$("#viewer-plus").addEventListener("click", () => setzeZoom(V.zoom + 0.25));
+function seiteAnzeigen(nr){
+  V.aktuelleSeite = nr;
+  $("#viewer-seitenzahl").textContent = V.n ? `${nr} / ${V.n}` : "";
+  if(V.meta) lsSchreiben("jm_seite_" + V.meta.fid, String(nr));
+}
+$("#viewer-inhalt").addEventListener("scroll", () => {
+  if(!V.doc || V.scrollPlaner) return;
+  V.scrollPlaner = requestAnimationFrame(() => {
+    V.scrollPlaner = 0;
+    const inhalt = $("#viewer-inhalt"); const mitte = inhalt.scrollTop + inhalt.clientHeight / 2;
+    let nr = 1; for(const el of V.seiten){ if(el.offsetTop <= mitte) nr = +el.dataset.nr; else break; }
+    if(nr !== V.aktuelleSeite) seiteAnzeigen(nr);
+  });
+}, {passive:true});
+$("#viewer-seitenzahl").addEventListener("click", () => {
+  if(!V.doc) return;
+  const eingabe = prompt(`Seite (1–${V.n})`, String(V.aktuelleSeite));
+  const nr = parseInt(eingabe, 10);
+  if(nr >= 1 && nr <= V.n){ $("#viewer-inhalt").scrollTop = V.seiten[nr-1].offsetTop - 8; seiteAnzeigen(nr); }
+});
+window.addEventListener("resize", () => { if(V.doc && V.offen){ const fit = ($("#viewer-inhalt").clientWidth || window.innerWidth) / V.w0; if(Math.abs(fit - V.fit) > 0.01){ V.fit = fit; V.gen++; for(let nr = 1; nr <= V.n; nr++) seiteFreigeben(nr); seitenMasse(); planeRendern(); } } });
+
+/* ─────────────────────────── Blatt „Mehr“ ─────────────────────────── */
+let offlineLauf = null;   // {abbrechen:boolean}
+function alleDateien(){
+  const l = [];
+  for(const e of M.eintraege) for(const d of sichereListe(e.dateien)) if(d.fid) l.push({fid:d.fid, vault:d._vault, groesse:d.groesse || 0});
+  for(const k of M.skripte) if(k.fid) l.push({fid:k.fid, vault:k._vault, groesse:k.groesse || 0});
+  const gesehen = new Set(); return l.filter(x => !gesehen.has(x.fid) && gesehen.add(x.fid));
+}
+function themeText(){ const v = lsLesen("jm_theme", ""); return v === "light" ? "light" : v === "dark" ? "dark" : "auto"; }
+function setzeTheme(v){
+  if(v === "auto"){ try{ localStorage.removeItem("jm_theme"); }catch(e){} document.documentElement.removeAttribute("data-theme"); }
+  else { lsSchreiben("jm_theme", v); document.documentElement.setAttribute("data-theme", v); }
+  const dunkel = v === "dark" || (v === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  $$('meta[name="theme-color"]').forEach(m => m.setAttribute("content", dunkel ? "#0F1620" : "#1F3B54"));
+  $$("#blatt-inhalt .segment button").forEach(b => b.classList.toggle("aktiv", b.dataset.theme === v));
+}
+function zeigeMehrBlatt(){
+  const st = sicheresObjekt(M.statistik); const dateien = alleDateien();
+  const mb = groesseText(st.bytes || dateien.reduce((a, d) => a + (d.groesse || 0), 0));
+  const t = themeText();
+  const html = `
+    <div class="mehr-zeile"><span>Angemeldet als</span><span>${esc(SESSION.label || "Leser")}</span></div>
+    <div class="mehr-zeile"><span>Schuljahr</span><span>${esc(M.schuljahr_text || "")}</span></div>
+    <div class="mehr-zeile"><span>Stand</span><span>${esc(fmtStand(M.erstellt))} · Build ${esc(M.build || "")}</span></div>
+    <div class="mehr-zeile"><span>Inhalt</span><span>${st.eintraege ?? M.eintraege.length} Einträge · ${st.skripte ?? M.skripte.length} Skripte<br>${st.dateien ?? dateien.length} Dateien · ${esc(mb)}</span></div>
+    <div class="abschnitt"><h3>Offline</h3>
+      <button class="mehr-knopf" data-mehr="offline-laden"><span>Für unterwegs laden</span><small id="offline-stand">${dateien.length} Dateien · ${esc(mb)}</small></button>
+      <div class="balken versteckt" id="offline-balken"><div></div></div>
+      <button class="mehr-knopf" data-mehr="offline-leeren"><span>Offline-Speicher leeren</span></button></div>
+    <div class="abschnitt"><h3>Darstellung</h3>
+      <div class="segment">
+        <button data-theme="auto" class="${t === "auto" ? "aktiv" : ""}">Auto</button>
+        <button data-theme="light" class="${t === "light" ? "aktiv" : ""}">Hell</button>
+        <button data-theme="dark" class="${t === "dark" ? "aktiv" : ""}">Dunkel</button></div></div>
+    <div class="abschnitt"><h3>Daten</h3>
+      <button class="mehr-knopf" data-mehr="aktualisieren"><span>Jetzt aktualisieren</span></button>
+      <button class="mehr-knopf warn" data-mehr="abmelden"><span>Abmelden</span></button></div>
+    <div style="margin-top:18px;font-size:13px;color:var(--tx3);text-align:center">Journal Mobil · ${esc(location.hostname || "lokal")}</div>`;
+  blattOeffnen("Mehr", html);
+  $("#blatt-inhalt .segment").addEventListener("click", ev => { const b = ev.target.closest("button[data-theme]"); if(b) setzeTheme(b.dataset.theme); });
+}
+$("#knopf-mehr").addEventListener("click", zeigeMehrBlatt);
+async function mehrAktion(was, knopf){
+  if(was === "abmelden") abmelden();
+  else if(was === "aktualisieren"){ knopf.disabled = true; try{ const neu = await pruefeAktualisierung(true); if(!neu) toast(OFFLINE ? "Offline – keine Verbindung." : "Schon auf dem neuesten Stand."); } finally{ knopf.disabled = false; } }
+  else if(was === "offline-laden"){
+    if(offlineLauf){ offlineLauf.abbrechen = true; return; }
+    await fuerUnterwegsLaden(knopf);
+  }
+  else if(was === "offline-leeren"){
+    try{
+      if(!("caches" in window)) throw new Error("Cache-API nicht verfügbar");
+      const cache = await caches.open(CACHE_NAME); const keys = await cache.keys(); let n = 0;
+      for(const req of keys) if(/\/vaults\/[^/]+\/f\//.test(req.url)){ await cache.delete(req); n++; }
+      toast(`Offline-Speicher geleert (${n} Dateien).`);
+      const s = $("#offline-stand"); if(s) s.textContent = `${alleDateien().length} Dateien · nicht geladen`;
+      const b = $("#offline-balken"); if(b){ b.classList.add("versteckt"); b.firstElementChild.style.width = "0"; }
+    }catch(e){ toast("Leeren fehlgeschlagen: " + (e.message || e)); }
+  }
+}
+async function fuerUnterwegsLaden(knopf){
+  if(!("caches" in window)){ toast("Offline-Speicher wird hier nicht unterstützt."); return; }
+  const dateien = alleDateien(); const stand = $("#offline-stand"); const balken = $("#offline-balken");
+  const lauf = offlineLauf = {abbrechen:false};
+  knopf.querySelector("span").textContent = "Abbrechen";
+  balken.classList.remove("versteckt");
+  let fertig = 0, bytes = 0, fehler = null;
+  try{
+    const cache = await caches.open(CACHE_NAME);
+    const warteschlange = [...dateien];
+    const arbeiter = async () => {
+      while(warteschlange.length && !lauf.abbrechen){
+        const d = warteschlange.shift();
+        const url = new URL(`vaults/${d.vault}/f/${d.fid}.enc`, location.href).href;
+        try{
+          if(!(await cache.match(url))){
+            const r = await fetch(url, {cache:"no-store"});
+            if(!r.ok) throw new Error(`HTTP ${r.status}`);
+            await cache.put(url, r);
+          }
+          fertig++; bytes += d.groesse || 0;
+          if(stand) stand.textContent = `${fertig} / ${dateien.length} · ${groesseText(bytes)}`;
+          balken.firstElementChild.style.width = Math.round(fertig / dateien.length * 100) + "%";
+        }catch(e){ fehler = e; lauf.abbrechen = true; }
+      }
+    };
+    await Promise.all([arbeiter(), arbeiter(), arbeiter()]);
+  }catch(e){ fehler = e; }
+  offlineLauf = null;
+  knopf.querySelector("span").textContent = "Für unterwegs laden";
+  if(fehler){ toast("Laden abgebrochen: " + (fehler.message || fehler)); if(stand) stand.textContent = `${fertig} / ${dateien.length} · Fehler`; }
+  else if(lauf.abbrechen){ toast("Abgebrochen."); }
+  else { toast(`Alles geladen: ${fertig} Dateien · ${groesseText(bytes)}`); if(stand) stand.textContent = `${fertig} / ${dateien.length} · ${groesseText(bytes)} · bereit`; }
+}
+/* Nach einem neuen Stand: Tresordateien im Cache entfernen, die kein Eintrag und kein Skript mehr nennt
+   (geänderte Dateien bekommen eine neue Kennung — die alte würde sonst für immer liegen bleiben). */
+async function offlineAufraeumen(){
+  try{
+    if(!("caches" in window) || !M) return;
+    const gueltig = new Set(alleDateien().map(d => d.fid));
+    const cache = await caches.open(CACHE_NAME); let n = 0;
+    for(const req of await cache.keys()){
+      const m = /\/vaults\/[^/]+\/f\/([0-9a-f]+)\.enc$/.exec(req.url);
+      if(m && !gueltig.has(m[1])){ await cache.delete(req); n++; }
+    }
+    if(n) console.info("Offline-Speicher: " + n + " veraltete Datei(en) entfernt");
+  }catch(e){ /* Cache-API nicht verfügbar oder gesperrt – unerheblich */ }
+}
+function abmelden(){
+  sitzungVerwerfen();
+  try{ Object.keys(localStorage).filter(k => k.startsWith("jm_seite_")).forEach(k => localStorage.removeItem(k)); }catch(e){}
+  blobCache.forEach(x => URL.revokeObjectURL(x.url)); blobCache.clear(); vaultKeys.clear();
+  SESSION = null; M = null;
+  location.reload();
+}
+
+/* ─────────────────────────── Kopf, Aktualisierung ─────────────────────────── */
+function zeichneKopf(){
+  $("#kopf-schuljahr").textContent = M.schuljahr_text || "";
+  $("#kopf-stand").textContent = M.erstellt ? "Stand " + fmtStand(M.erstellt) : "";
+  $("#kopf-offline").classList.toggle("versteckt", !OFFLINE);
+}
+function setzeOffline(v){ OFFLINE = v; const k = $("#kopf-offline"); if(k) k.classList.toggle("versteckt", !v); }
+window.addEventListener("online",  () => { setzeOffline(false); pruefeAktualisierung(); });
+window.addEventListener("offline", () => setzeOffline(true));
+
+function allesZeichnen(scrollZuHeute = false){
+  FINDEX = ferienIndex(M.ferien);
+  zeichneKopf(); zeichneDemnaechst(); zeichneWoche(scrollZuHeute); zeichneSkripteChips(); zeichneSkripte();
+}
+/* index.json neu holen; ist der Build neu, Manifest neu laden und neu zeichnen. Offline → stiller Rückfall. */
+let pruefeLaeuft = false;
+async function pruefeAktualisierung(laut = false){
+  if(!SESSION || pruefeLaeuft) return false;
+  pruefeLaeuft = true;
+  try{
+    let idx;
+    try{ idx = await ladeIndex(); setzeOffline(navigator.onLine === false); }   // Cache-Antwort des Service Workers zählt nicht als online
+    catch(e){ setzeOffline(true); return false; }
+    if(idx.build && idx.build === (M && M.build)) return false;
+    // Tresor neu verschlüsselt (build.py --neu-verschluesseln): keine unserer Vault-IDs existiert mehr → neu anmelden
+    if(sichereListe(idx.vaults).length && !SESSION.vaults.some(v => idx.vaults.some(x => x.id === v.id))){
+      toast("Der Tresor wurde neu verschlüsselt – bitte neu anmelden.", 6000);
+      sitzungVerwerfen(); setTimeout(() => location.reload(), 2500);
+      return false;
+    }
+    // Neuer Build: Manifest-Pfade könnten sich geändert haben → aus dem Index nachziehen
+    for(const v of SESSION.vaults){ const iv = sichereListe(idx.vaults).find(x => x.id === v.id); if(iv && iv.manifest) v.manifest = iv.manifest; }
+    const daten = await ladeManifeste(SESSION);
+    M = daten; SESSION.build = idx.build || daten.build; INDEX = idx;
+    const merken = !!(sitzungLesen() || {}).merken; sitzungSpeichern(SESSION, merken);
+    allesZeichnen();
+    toast("Aktualisiert · Stand " + fmtStand(M.erstellt));
+    offlineAufraeumen();
+    return true;
+  }catch(e){
+    console.warn(e);
+    if(laut) toast("Aktualisierung fehlgeschlagen: " + (e.message || e));
+    return false;
+  }finally{ pruefeLaeuft = false; }
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") pruefeAktualisierung(); });
+window.addEventListener("pageshow", ev => { if(ev.persisted) pruefeAktualisierung(); });
+
+/* ─────────────────────────── Anmeldung & Start ─────────────────────────── */
+function appZeigen(){
+  $("#anmeldung").classList.add("versteckt"); $("#app").classList.remove("versteckt");
+  const tab = lsLesen("jm_tab", "agenda") === "skripte" ? "skripte" : "agenda";
+  heuteGezeigt = (tab === "agenda");                  // allesZeichnen(true) scrollt nur, wenn die Agenda sichtbar ist
+  allesZeichnen(tab === "agenda");
+  zeigeTab(tab);
+}
+function loginStatus(text, fehler = false){ const s = $("#login-status"); s.textContent = text; s.classList.toggle("fehler", fehler); }
+$("#login-form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const pw = $("#login-pw").value; if(!pw) return;
+  const knopf = $("#login-knopf"); knopf.disabled = true;
+  loginStatus("Prüfe Zugang — Schlüssel wird abgeleitet …");
+  try{
+    const idx = await ladeIndex();
+    const session = await pruefePasswort(pw, idx);
+    if(!session){ loginStatus("Kein Zugang mit diesem Passwort gefunden.", true); return; }
+    loginStatus("Lade Daten …");
+    SESSION = session; INDEX = idx;
+    M = await ladeManifeste(session);
+    sitzungSpeichern(session, $("#login-merken").checked);
+    $("#login-pw").value = ""; loginStatus("");
+    appZeigen();
+  }catch(e){
+    console.warn(e); SESSION = null;
+    loginStatus((istNetzfehler(e) ? "Keine Verbindung zum Portal." : "Fehler: " + (e.message || e)), true);
+  }finally{ knopf.disabled = false; }
+});
+
+async function start(){
+  setzeTheme(themeText());
+  if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(e => console.warn("Service Worker:", e)); }
+  const gespeichert = sitzungLesen();
+  if(gespeichert && gespeichert.s && Array.isArray(gespeichert.s.vaults) && gespeichert.s.vaults.length){
+    loginStatus("Lade gespeicherte Sitzung …");
+    try{
+      SESSION = gespeichert.s;
+      M = await ladeManifeste(SESSION);
+      appZeigen();
+      pruefeAktualisierung();
+      offlineAufraeumen();
+      return;
+    }catch(e){
+      SESSION = null;
+      if(istNetzfehler(e) || (e && e.status >= 500)){
+        // Offline oder Server gestört: Sitzung behalten, nur melden (sonst müsste das Passwort nach jedem Funkloch neu eingegeben werden).
+        console.warn("Sitzung konnte nicht geladen werden:", e);
+        loginStatus("Keine Verbindung – bitte später erneut versuchen.", true);
+      } else {
+        console.warn("Gespeicherte Sitzung ungültig:", e);
+        sitzungVerwerfen();
+        loginStatus("Die gespeicherte Sitzung ist nicht mehr gültig. Bitte neu anmelden.", true);
+      }
+    }
+  }
+  $("#anmeldung").classList.remove("versteckt");
+}
+start();
+</script>
+</body>
+</html>
