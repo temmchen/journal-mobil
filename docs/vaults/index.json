@@ -2,8 +2,8 @@
  "v": 1,
  "portal": "journal-mobil",
  "schuljahr": "2026 – 2027",
- "erstellt": "2026-09-28T17:55:47",
- "build": "c316a776440a",
+ "erstellt": "2026-09-29T07:22:13",
+ "build": "de507abb997e",
  "kdf": {
   "typ": "PBKDF2-SHA256",
   "iter": 600000
@@ -11,7 +11,7 @@
  "principals": [
   {
    "id": "p0",
-   "salt": "eoor2vZhfX3XZj9EXpq8+A=="
+   "salt": "6Lj9DA2uf5cHy7qvx0TgMQ=="
   }
  ],
  "vaults": [
@@ -19,8 +19,8 @@
    "id": "87d5b3d3f926503a",
    "wraps": [
     {
-     "iv": "JdCTYA+NNUTdEZOU",
-     "ct": "lMpmRx/lMvHwW/N0lKtfTH9nRiJaj64GNoSn7bcNH9L/jR8nSKyCE/2+BeMVE3AD9M+j1Z33lsQ+0n90LiFmI6Qag3wjPCS0318ampZnKmW15yPLGxjcYtheuUrJf8hcFd0aqSxBf35x0o3Po33q1A==",
+     "iv": "Go9Xxz+2wbITmA1E",
+     "ct": "AhsQxYeDB5MkDAmgqPfkA/fpqHD3MyCLsND8Y2BevRy47Ttne/HaxUwA311UxfQcTpNcDIB1obkpfiFnbbyzpYR93uIvSqBPUs10qWpwn5Fr5uSQSGXXP6GPhZDDXB4w1vDvFyh8cy2+dm5QNR7ilw==",
      "p": "p0"
     }
    ],
