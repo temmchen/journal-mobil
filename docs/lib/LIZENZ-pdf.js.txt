@@ -1,0 +1,3 @@
+pdf.js 4.10.38 — Mozilla Foundation, Apache License 2.0
+Quelle: https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/ (pdf.min.mjs, pdf.worker.min.mjs)
+Wird vom Journal Mobil zum Anzeigen der entschlüsselten PDF im Browser genutzt.
