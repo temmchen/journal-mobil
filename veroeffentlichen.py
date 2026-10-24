@@ -148,6 +148,21 @@ def main():
         sys.exit("❌ Kein GitHub-Remote eingerichtet — bitte „Journal Mobil einrichten.command“ ausführen.")
     sag("\n① Hole aktuellen Stand von GitHub …")
     pull = git("pull", "--no-rebase", "--quiet", "origin", "main", fehler_ok=True)
+    if pull.returncode != 0 and "unrelated histories" in (pull.stderr or ""):
+        # Verlauf auf GitHub wurde gekürzt (24.10.2026, Force-Push): dieser Klon hat noch den alten.
+        # Lokale Code-Änderungen? Dann stehen bleiben. Sonst auf den GitHub-Stand setzen —
+        # docs/vaults wird gleich ohnehin neu gebaut.
+        offen = [z for z in git("status", "--porcelain", fehler_ok=True).stdout.splitlines()
+                 if z and not z[3:].startswith("docs/vaults") and ".bak-" not in z]
+        if offen:
+            sag("❌ Der Verlauf auf GitHub wurde gekürzt, und hier liegen ungesicherte Änderungen:")
+            for z in offen[:10]:
+                sag(f"   {z}")
+            sys.exit(1)
+        sag("   ℹ️  Verlauf auf GitHub wurde gekürzt — übernehme den neuen Stand.")
+        git("fetch", "--quiet", "origin", "main")
+        git("reset", "--quiet", "--hard", "origin/main")
+        pull = git("status", fehler_ok=True)
     if pull.returncode != 0:
         sag(f"❌ git pull fehlgeschlagen — bitte zuerst am Mac aufräumen:\n{pull.stderr.strip()}")
         sys.exit(1)
